@@ -33,6 +33,7 @@ class AppData:
         
         }
 
+
         if user_name == "JPHELAN":
             self.paths['status_tbl'] = onedrive + "\\R_projects\\SAR_scraper\\output\\risk_status_merged.csv"
 
