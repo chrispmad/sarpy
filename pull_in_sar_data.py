@@ -23,9 +23,9 @@ class AppData:
         
         self.paths = {
             'dfo_polys': onedrive + "data\\CNF\\" + dfo_polys_name,
-            'dfo_polys_l': "data\\" + dfo_polys_name,
+            'dfo_polys_l': "app\\www\\" + dfo_polys_name,
             'status_tbl': onedrive + "SAR_scraper\\output\\risk_status_merged.csv",
-            'status_tbl_l': "data\\risk_status_merged.csv"
+            'status_tbl_l': "app\\www\\risk_status_merged.csv"
         }
     
     def update(self):
@@ -43,5 +43,3 @@ class AppData:
 #%% 
 my_app = AppData()
 my_app.update()
-
-# %%
