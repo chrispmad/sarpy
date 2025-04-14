@@ -13,3 +13,5 @@ app/www/bc_bound.gpkg
 app/www/dfo_sara_and_crit_hab_bulltrout_and_sockeye_data.gpkg
 app/www/risk_status_merged.csv
 sarpy.Rproj
+.gpkg
+.csv
