@@ -5,7 +5,8 @@
 .floating-toolbox {
     position: absolute;
     z-index: 5;
-    width: 30%;
+    width: 40%;
     height: 80%;
-    top: 10%; left: 20%;
+    opacity: 0.6;
+    top: 10%; left: 60%;
 }

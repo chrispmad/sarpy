@@ -10,8 +10,10 @@ data/**
 www/**
 sarpy.Rproj
 app/www/bc_bound.gpkg
-app/www/dfo_sara_and_crit_hab_bulltrout_and_sockeye_data.gpkg
+app/www/dfo_sara_critical_habitat_bc.gpkg
+app/www/dfo_sara_occurrences_in_BC_all_species.gpkg
 app/www/risk_status_merged.csv
 sarpy.Rproj
 .gpkg
 .csv
+output/**

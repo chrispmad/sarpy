@@ -1,13 +1,17 @@
 # PART 4 - Exercise 1
 # ///////////////////
 
+import folium.map
 from shiny import App, ui, reactive, render, req
 import pandas as pd
 from shinywidgets import render_widget, output_widget
 import folium
 from pathlib import Path
 from folium.plugins import MarkerCluster
+import geopandas as gpd
 
+#%% 
+#%% 
 species_sel = ui.input_selectize('spec_sel',"Species",
                                  choices=['Need Data'])
 
@@ -26,11 +30,22 @@ app_ui = ui.page_fluid(
 
 def server(input, output, session):
     
+    sar_polys = gpd.read_file(Path(__file__).parent/"www\\dfo_sara_and_crit_hab_bulltrout_and_sockeye_data.gpkg")
+
     @render.ui
     def myleaf():
-        boulder_coords = [40.015, -105.2705]
+        sar_polys_geojson = folium.GeoJson(data=sar_polys, style_function=lambda x: {
+            "fillColor": "orange",
+            "weight": 1,
+            "color": "black",
+            "fillOpacity": 0.75
+            })
+        my_map = folium.Map(data = [54.93147, -124.12823], zoom_start = 8)
+        sar_polys_geojson.add_to(my_map)
+        #boulder_coords = [40.015, -105.2705]
         #Create the map
-        my_map = folium.Map(location = boulder_coords, zoom_start = 13)
+        #my_map = folium.Map(location = boulder_coords, zoom_start = 13)
+
         return my_map
     
     @reactive.calc

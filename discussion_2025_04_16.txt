@@ -1,0 +1,248 @@
+Chrissy has many tabs (😂) 
+
+ 
+
+Data sources 
+
+At least 3 or 4 major sources of where you find spatial data 
+
+Public BC, DFO, CDC, reports - Artic grayling 
+
+ 
+
+DFO - SARA listed species 
+
+CDC - some spatial data for when CDC staff had observation - mostly terrestrial 
+
+Reports - cosewic, could be bc management, bc data knowledge centre 
+
+IUCN  red list assessment? 
+
+Nature serve - might have some distribution data 
+
+Inaturalist = data on location 
+
+ 
+
+Fish ranges -  
+
+FISS data - all fish points - missing attribute data = conservation data, SAR species provincially?  
+
+No conservation data 
+
+SAR visualsied would need atribute data for this  
+
+BC list, COSEWIC, SARA, BC list 
+
+ 
+
+BC species and ecosystem explorer https://a100.gov.bc.ca/pub/eswp/search.do;jsessionid=AD09E08623A96D16ED090E4BCE8FDCC4?method=reset 
+
+ 
+
+3 levels:  
+
+Blue and red listed species CDC 
+
+Fish assessed by COSEWIC  
+
+DFO or ECCC 
+
+ 
+
+Problems of scale 
+
+Mapping is species level and conservation is population level 
+
+DFO has populations 
+
+COSEWIC has populations in reports, but doesn't share the spatial data publicly 
+
+Province is just mapping fish 
+
+Separate spatial processing that needs to be done 
+
+Spatial extract - where are the relevant points? 
+
+CDC non masked data may have something in there worth looking at 
+
+This is the biggest problem 
+
+Not listed unit or population 
+
+ 
+
+Area of occupancy = where the live within the total extent  
+
+ 
+
+ 
+
+First distribution data  
+
+Then: find report and get polygons 
+
+ 
+
+CDC map locations  
+
+BC CDC search - shows a column that says they have mapped locations 
+
+Non-sensitive and there are also confidential locations too 
+
+Confidential - could be contact in the future - SAR species in the future but not species specific information 
+
+Do they have their own maps or are they taken from SARA? 
+
+ 
+
+DFO data is easy to pull in  
+
+CDC - would be worth following up on as we get data 
+
+ 
+
+Plan B = access layer, list of species concerned about - see how many CDC  polygons we have for those - name in DFO and CDC polygon - refer to DFO - patchy polygons from DFO 
+
+ 
+
+DFO = then CDC, filter CDC that we want = spatial select = two tables and polygons, and are they the same, delete CDC if so.  
+
+Critical habitat - do the same - remove from CDC if they are the same  
+
+Human involved - check if Locations are done - delete and replacement for DFO so there is a track of it 
+
+ 
+
+Attribute data 
+
+Needs a join in the future to get attribute data  - whole species vs population or DU 
+
+Small scale watershed - spatial join with watershed and named polygon - waterbody ID -  
+
+Knowing which watersheds are important - CDC - link between SAR and watersheds - would be in each COSEWIC report and each species report from CDC - verbally, but not anything tabulated (public anyway) 
+
+ 
+
+ 
+
+Distribution 
+
+Points vs polygons - conversion? Want points and polygons 
+
+Distribution - confirmed points only 
+
+Unconfirmed points - stuff that is not done by experts 
+
+Anything 30 years old is not useable 
+
+SARA DFO 
+
+critical habitat  
+
+polygons, or aspatial features listed 
+
+Actualdistribution 
+
+COSEWIC  
+
+area of occupancy 
+
+AIA - convex polygon (full distributions) 
+
+ 
+
+To see: 
+
+Confirmed vs unconfirmed 
+
+Distribution vs modelled distribution, vs critical habitat 
+
+ 
+
+CDC non-sensitive layer may have other sources, which may not be what we want 
+
+Unique occurrences that are not in the DFO data - only add those (polygons) 
+
+Combined a few things - terrestrial and aquatic 
+
+Spatial overlay assessment, non-sensitive and masked 
+
+Maybe include it… unsure as of yet 
+
+Masked - future time 
+
+ 
+
+Where is the data coming from? 
+
+ 
+
+Finally: 
+
+Soup of points = what does this soup of points give that is different from the polygons - what are the points for?  
+
+Helps to target monitoring = points help to get to specific places - for bull trout for instance - watershed - grab bags, funding applications,  
+
+Make more informed decisions for monitoring etc. 
+
+Points - presence (confirmed), presence (old/not expert?) , non-detect point (it was not found there) = this is like absence data 
+
+  
+
+ 
+
+Next steps: 
+
+ID what species we have information for 
+
+Swiss cheese method - delete from CDC when we have DFO 
+
+What have we got and not got? 
+
+What data needs to be got from COSEWIC 
+
+Use fish ranges - then overlay with discrete watersheds - extract that range from the dataset 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Additional notes from Chris (probably superfluous!) 
+
+ 
+
+(CDC search tool: https://a100.gov.bc.ca/pub/eswp/search.do;jsessionid=AD09E08623A96D16ED090E4BCE8FDCC4?method=reset) 
+
+  
+
+Data to plot: 
+
+Polygons: 
+
+DFO SARA polygons + DFO critical habitat polygons 
+
+Aquatic species in non-sensitive CDC species-at-risk (unique occs that aren't captured in DFO) 
+
+FISS_FISH_RANGES (if it's good) 
+
+Points:
+
+FDIS points (would need the following fields joined on: conservation status, DU/population, which are hard to find because those polygons only exist for species elevated to SARA status). 
+
+CDC non-masked points (might have some columns describing population…? Yes for something like Lake Chub - Atlin Warm Springs Population and Lake Chub - Liard Springs) 
+
+  
+
+** NOTE: CDC unmasked POLYGONS (and FISS_FISH_RANGES_SP) could be used as spatial overlay: 
+
+Filter for ray-finned fishes 
+
+Delete polygons/polygon areas that are already described in DFO 
+
+Whatever is left and unique to CDC unmasked polygons, we use as cookie cutting shapes for soup of fish occurrence points (e.g. in FDIS), those points within the polygons will then be added to the map. 
+Note that these points can be one of three types: confirmed presence, unconfirmed presence (e.g. too old), or confirmed ABSENCE. 
