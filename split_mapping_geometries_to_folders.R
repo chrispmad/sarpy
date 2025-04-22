@@ -57,13 +57,14 @@ dfo |>
       sf::st_join(bc_g) |>
       dplyr::group_by(Common_Name_EN, Population_EN, cell_id) |>
       dplyr::group_split() |>
-      purrr::iwalk( ~ {        # Create containing folder for this common name / population name / cell id
+      purrr::iwalk( ~ {        
+        # Create containing folder for this common name / population name / cell id
 
         the_common_name = unique(.x$Common_Name_EN)
         the_pop_name = unique(.x$Population_EN)
         the_cell_id = unique(.x$cell_id)
 
-        the_folder = paste0("output/testing/",the_common_name,"/",the_pop_name)
+        the_folder = paste0("app/www/dfo/",the_common_name,"/",the_pop_name)
         if(!dir.exists(the_folder)){
           dir.create(the_folder,recursive = T)
         }

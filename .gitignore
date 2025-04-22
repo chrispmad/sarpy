@@ -18,4 +18,5 @@ sarpy.Rproj
 .gpkg
 .csv
 output/**
+app/www/dfo/**
 
