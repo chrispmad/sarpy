@@ -5,7 +5,6 @@ import re
 import shutil
 import glob
 import pandas as pd
-import getpass
 
 
 # Set up folder paths and filepaths.
@@ -19,8 +18,8 @@ import getpass
 class AppData:
     def __init__(self):
         home_wd = os.getcwd()
-        user_name = getpass.getuser()
-        user_wd = "C:\\Users\\"+getpass.getuser()
+        user_name = os.getlogin()
+        user_wd = "C:\\Users\\"+user_name
         onedrive = user_wd + "\\OneDrive - Government of BC\\"
         dfo_polys_name = "dfo_sara_occurrences_in_BC_all_species.gpkg"
         dfo_ch_polys_name = "dfo_sara_critical_habitat_bc.gpkg"
