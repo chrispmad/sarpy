@@ -13,7 +13,9 @@ app/www/bc_bound.gpkg
 app/www/dfo_sara_critical_habitat_bc.gpkg
 app/www/dfo_sara_occurrences_in_BC_all_species.gpkg
 app/www/risk_status_merged.csv
+app/www/CDC_polygons_trimmed_by_DFO.gpkg
 sarpy.Rproj
 .gpkg
 .csv
 output/**
+

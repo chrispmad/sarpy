@@ -26,9 +26,9 @@ class AppData:
         
         self.paths = {
             'dfo_polys': onedrive + "data\\DFO_SARA\\" + dfo_polys_name,
-            'dfo_polys_l': "app\\www\\" + dfo_polys_name,
+            'dfo_polys_l': "data\\" + dfo_polys_name,
             'dfo_ch_polys': onedrive + "data\\DFO_SARA\\" + dfo_ch_polys_name,
-            'dfo_ch_polys_l': "app\\www\\" + dfo_ch_polys_name,
+            'dfo_ch_polys_l': "data\\" + dfo_ch_polys_name,
             'status_tbl': onedrive + "\\SAR_scraper\\output\\risk_status_merged.csv",
             'status_tbl_l': "app\\www\\risk_status_merged.csv"     
         }
