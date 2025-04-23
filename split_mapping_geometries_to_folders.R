@@ -1,6 +1,6 @@
 library(tidyverse)
 library(sf)
-library(qs)
+library(arrow)
 
 ensure_multipolygons <- function(X) {
   tmp1 <- tempfile(fileext = ".gpkg")
@@ -19,7 +19,14 @@ bc_g = bc_g |>
   dplyr::mutate(cell_id = row_number()) |>
   sf::st_transform(4326)
 
-# ggplot()+geom_sf(data = bc_g[1,], aes(fill = cell_id)) + geom_sf(data = bc, fill = 'transparent')
+bc = bc |> sf::st_transform(4326)
+
+# sf::write_sf(bc, "app/www/bc_bound.gpkg")
+# sf::write_sf(bc_g, "app/www/bc_grid.gpkg")
+bc = arrow::as_arrow_table(bc)
+bc_g = arrow::as_arrow_table(bc_g)
+arrow::write_parquet(bc, "app/www/bc_bound.parquet")
+arrow::write_parquet(bc_g, "app/www/bc_grid.parquet")
 
 dfo = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species.gpkg")
 dfo_ch = sf::read_sf("data/dfo_sara_critical_habitat_bc.gpkg")
@@ -54,10 +61,10 @@ dfo |>
       )
     }
     okay_geometries |>
-      sf::st_join(bc_g) |>
+      sf::st_join(sf::st_as_sf(bc_g)) |>
       dplyr::group_by(Common_Name_EN, Population_EN, cell_id) |>
       dplyr::group_split() |>
-      purrr::iwalk( ~ {        
+      purrr::iwalk( ~ {
         # Create containing folder for this common name / population name / cell id
 
         the_common_name = unique(.x$Common_Name_EN)
@@ -68,7 +75,8 @@ dfo |>
         if(!dir.exists(the_folder)){
           dir.create(the_folder,recursive = T)
         }
-        qs::qsave(.x, paste0(the_folder,"/cell_",the_cell_id,".qs"))
+        arrow::write_parquet(arrow::as_arrow_table(.x),paste0(the_folder,"/cell_",the_cell_id,".parquet"))
+        # qs::qsave(.x, paste0(the_folder,"/cell_",the_cell_id,".qs"))
       }
       )
   }, .progress = TRUE)
