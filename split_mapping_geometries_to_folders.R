@@ -1,6 +1,7 @@
 library(tidyverse)
 library(sf)
 library(arrow)
+library(geoarrow)
 
 ensure_multipolygons <- function(X) {
   tmp1 <- tempfile(fileext = ".gpkg")
@@ -21,12 +22,12 @@ bc_g = bc_g |>
 
 bc = bc |> sf::st_transform(4326)
 
-# sf::write_sf(bc, "app/www/bc_bound.gpkg")
-# sf::write_sf(bc_g, "app/www/bc_grid.gpkg")
-bc = arrow::as_arrow_table(bc)
-bc_g = arrow::as_arrow_table(bc_g)
-arrow::write_parquet(bc, "app/www/bc_bound.parquet")
-arrow::write_parquet(bc_g, "app/www/bc_grid.parquet")
+sf::write_sf(bc, "app/www/bc_bound.gpkg")
+sf::write_sf(bc_g, "app/www/bc_grid.gpkg")
+# bc = arrow::as_arrow_table(bc)
+# bc_g = arrow::as_arrow_table(bc_g)
+# arrow::write_parquet(bc, "app/www/bc_bound.parquet")
+# arrow::write_parquet(bc_g, "app/www/bc_grid.parquet")
 
 dfo = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species.gpkg")
 dfo_ch = sf::read_sf("data/dfo_sara_critical_habitat_bc.gpkg")
@@ -75,7 +76,9 @@ dfo |>
         if(!dir.exists(the_folder)){
           dir.create(the_folder,recursive = T)
         }
-        arrow::write_parquet(arrow::as_arrow_table(.x),paste0(the_folder,"/cell_",the_cell_id,".parquet"))
+        sf::write_sf(.x, paste0(the_folder,"/cell_",the_cell_id,".gpkg"))
+        # geoarrow::write_geo(.x, paste0(the_folder,"/cell_",the_cell_id,".parquet"))
+        # arrow::write_parquet(arrow::as_arrow_table(.x),paste0(the_folder,"/cell_",the_cell_id,".parquet"))
         # qs::qsave(.x, paste0(the_folder,"/cell_",the_cell_id,".qs"))
       }
       )
