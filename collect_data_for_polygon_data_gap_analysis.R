@@ -4,10 +4,26 @@ library(sf)
 library(readxl)
 library(openxlsx)
 library(tidyverse)
+library(wdpar)
 
 # = = = = = = = = = = = = = = = = = =
 
 # Function to extract and clean up population names from CDC info.
+repair_geoms = function(d){
+  if(sum(!sf::st_is_valid(d)) > 0){
+    d_bad_geoms = d |>
+      dplyr::filter(!sf::st_is_valid(geom))
+    d_good_geoms = d |>
+      dplyr::filter(sf::st_is_valid(geom))
+
+    d_fixed_geoms = wdpar::st_repair_geometry(d_bad_geoms)
+
+    output = dplyr::bind_rows(d_good_geoms, d_fixed_geoms)
+  } else {
+    output = d
+  }
+  return(output)
+}
 
 extract_pop_name = function(d,col_name){
   d |>
@@ -34,7 +50,8 @@ dfo_ch = sf::read_sf("data\\dfo_sara_critical_habitat_bc.gpkg")
 ### 2. CDC polygons (non-sensitive)
 cdc = bcdc_query_geodata('species-and-ecosystems-at-risk-publicly-available-occurrences-cdc') |>
   # Establish filters for CDC polygons (ray-finned fishes, anything else?)
-  filter(TAX_CLASS %in% c("ray-finned fishes","bivalves")) |>
+  # filter(TAX_CLASS %in% c("ray-finned fishes","bivalves")) |>
+  filter(!TAX_CLASS %in% c("dicots","monocots","ferns","conifers","quillworts") & !is.na(TAX_CLASS)) |>
   collect()
 
 ### 3. Chrissy's excel file that notes which data is available.
@@ -54,8 +71,10 @@ cdc = cdc |>
 dat = dat |>
   extract_pop_name("English Name")
 
-# Clean up DFO population names(?)
-# unique(dfo$Population_EN)
+# Clean up geometries of DFO, DFO CH and CDC.
+dfo = repair_geoms(dfo)
+cdc = repair_geoms(cdc)
+dfo_ch = repair_geoms(dfo_ch)
 
 # Split by common name, scientific name, and population name,
 # then filter DFO and DFO crit hab for those
@@ -84,15 +103,15 @@ cdc_trimmed = cdc |>
     if(nrow(relev_dfo) > 0) {
       init_area = sum(round(as.numeric(sf::st_area(.x)),0))
       print(paste0("initial area (m^2) of this chunk of data: ",init_area))
-      dat_trimmed = suppressWarnings(
-        .x |>
+      dat_trimmed = suppressWarnings({
+       .x |>
           dplyr::mutate(row_id = row_number()) |>
           sf::st_difference(relev_dfo) |>
           dplyr::group_by(ENG_NAME,SCI_NAME,TAX_CLASS,GLOB_RANK,
                           PROV_RANK,COSEWIC,BC_LIST,SARA_SCHED,
                           row_id) |>
           dplyr::summarise(.groups = 'drop')
-      )
+      })
       new_area = sum(round(as.numeric(sf::st_area(dat_trimmed)),0))
       print(paste0("new area (m^2) of this chunk of data: ",new_area," (",100*round(new_area/init_area,2),"%)"))
     }
@@ -114,6 +133,64 @@ cdc_trimmed = cdc |>
     output
   }, .progress = T) |>
   dplyr::bind_rows()
+
+# Example plot for Chrissy of trimming CDC polygons with DFO's polygons.
+
+eg_cdc = cdc |> dplyr::filter(ENG_NAME == 'Salish Sucker')
+eg_dfo = dfo |> dplyr::filter(Common_Name_EN == 'Salish Sucker')
+eg_dfo_ch = dfo_ch |> dplyr::filter(Common_Name_EN == 'Salish Sucker')
+eg_cdc_t = cdc_trimmed |> dplyr::filter(ENG_NAME == 'Salish Sucker')
+library(leaflet)
+library(htmlwidgets)
+l = leaflet() |>
+  addProviderTiles(providers$CartoDB) |>
+  addLayersControl(position = 'bottomright',
+                   overlayGroups = c("CDC","DFO","DFO CH","CDC trimmed"),
+                   options = layersControlOptions(collapsed = F)) |>
+  addMapPane('cdc', zIndex = 300) |>
+  addMapPane('dfo', zIndex = 500) |>
+  addMapPane('dfo_ch', zIndex = 700) |>
+  addMapPane('cdc_t', zIndex = 900) |>
+  addPolygons(
+    data = eg_cdc |> sf::st_transform(4326),
+    color = 'darkgreen',
+    fillColor = 'darkgreen',
+    fillOpacity = 1,
+    opacity = 1,
+    group = 'CDC',
+    options = pathOptions(pane = 'cdc')
+  ) |>
+  addPolygons(
+    data = eg_dfo |> sf::st_transform(4326),
+    color = 'darkblue',
+    fillColor = 'darkblue',
+    fillOpacity = 1,
+    opacity = 1,
+    group = 'DFO',
+    options = pathOptions(pane = 'dfo')
+  ) |>
+  addPolygons(
+    data = eg_dfo_ch |> sf::st_transform(4326),
+    color = 'purple',
+    fillColor = 'purple',
+    fillOpacity = 1,
+    opacity = 1,
+    group = 'DFO CH',
+    options = pathOptions(pane = 'dfo_ch')
+  ) |>
+  addPolygons(
+    data = eg_cdc_t |> sf::st_transform(4326),
+    color = 'red',
+    fillColor = 'red',
+    fillOpacity = 1,
+    opacity = 1,
+    group = 'CDC trimmed',
+    options = pathOptions(pane = 'cdc_t')
+  ) |>
+  addLegend(position = 'topright',
+            labels = c("CDC","DFO","DFO CH","CDC trimmed"),
+            colors = c("darkgreen","darkblue","purple","red"))
+htmlwidgets::saveWidget(l, file = "output/trim CDC polygons Salish sucker example.html")
 
 # Come Tuesday, let's look at:
 # 1. Maybe search to see if there are multiple rows in Chrissy's table for a given
