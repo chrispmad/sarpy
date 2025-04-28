@@ -37,7 +37,7 @@ extract_pop_name = function(d,col_name){
 
 extract_com_name = function(d,name_col){
   d |>
-    dplyr::mutate(common_name = stringr::str_extract(!!rlang::sym(name_col),"[a-zA-Z ]*")) |>
+    dplyr::mutate(common_name = stringr::str_extract(!!rlang::sym(name_col),"[a-zA-Z\\- ]*")) |>
     dplyr::mutate(common_name = stringr::str_squish(common_name))
 }
 
