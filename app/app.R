@@ -9,10 +9,10 @@ domain_select = pickerInput('dom_sel','Domain',
                             choices = c("Terrestrial","Aquatic"),
                             selected = 'Aquatic',
                             options = pickerOptions(container = 'body'))
-species_select = pickerInput('spec_sel','Species',choices = NULL,
-                             options = pickerOptions(container = 'body'))
-population_select = pickerInput('pop_sel','Population',choices = NULL,
-                                options = pickerOptions(container = 'body'))
+species_select = pickerInput('spec_sel','Species',choices = NULL,multiple = T,
+                             options = pickerOptions(container = 'body',liveSearch = T))
+population_select = pickerInput('pop_sel','Population',choices = NULL,multiple = T,
+                                options = pickerOptions(container = 'body',liveSearch = T))
 
 toolbox = tagList(
   h3("Toolbox"),
@@ -41,15 +41,17 @@ ui <- page_fluid(
 server <- function(input, output, session) {
   # ============================================
   # Load in data.
-  bc_bound = read_sf("www\\bc_bound.gpkg")
-  bc_grid = read_sf("www\\bc_grid.gpkg")
+  bc_bound = readRDS("www\\bc_bound.rds")
+  bc_grid = readRDS("www\\bc_grid.rds")
   riskstat = readr::read_csv("www\\risk_status_merged.csv") |>
     purrr::set_names(snakecase::to_snake_case) |>
     dplyr::mutate(legal_population = stringr::str_remove_all(legal_population, " [pP]opulation"))
+  dfo_hull = readRDS("www\\dfo_sara_occurrences_in_BC_convex_hull.rds")
 
   # ============================================
   # Establish reactives and reactive values
   map_bounds = reactiveVal()
+  map_zoom = reactiveVal()
 
   observeEvent(input$myleaf_bounds, {
     bounds = input$myleaf_bounds
@@ -59,6 +61,10 @@ server <- function(input, output, session) {
     if(bounds$east > -115) bounds$east = -114.08890
     if(bounds$west < -140) bounds$west = -139.01451
     map_bounds(bounds)
+  })
+
+  observeEvent(input$myleaf_zoom,{
+    map_zoom(input$myleaf_zoom)
   })
 
   bc_grid_in_frame = reactive({
@@ -72,10 +78,12 @@ server <- function(input, output, session) {
       sf::st_bbox() |>
       sf::st_as_sfc() |>
       sf::st_as_sf()
-    bc_grid |>
+    output = bc_grid |>
       sf::st_filter(
         map_bounds_sf
       )
+    print(paste0(nrow(output), " cells are in frame"))
+    output
   })
 
   # Risk status table filtered by domain
@@ -98,9 +106,12 @@ server <- function(input, output, session) {
   observe({
     req(nrow(rs_sp()) > 0)
     if(!is.na(unique(rs_sp()$legal_population)[1])){
-      updatePickerInput('pop_sel',choices = unique(rs_sp()$legal_population)[order(unique(rs_sp()$legal_population))],session=session)
+      updatePickerInput('pop_sel',
+                        choices = unique(rs_sp()$legal_population)[order(unique(rs_sp()$legal_population))],
+                        selected = unique(rs_sp()$legal_population)[1],
+                        session=session)
     } else {
-      updatePickerInput('pop_sel',choices = 'NA',session=session)
+      updatePickerInput('pop_sel',choices = 'NA',selected = 'NA',session=session)
     }
     print("updated pop_sel input")
   })
@@ -123,8 +134,9 @@ server <- function(input, output, session) {
   observe({
     print(rs_p())
   })
+
   dfo_polys = reactive({
-    req(nrow(rs_p()) > 0)
+    req(!is.null(input$spec_sel), nrow(rs_p()) > 0)
     all_data = list()
     files_to_access = tidyr::crossing(cosewic_common_name = rs_p()$cosewic_common_name,
                                       legal_population = rs_p()$legal_population,
@@ -132,12 +144,13 @@ server <- function(input, output, session) {
     )
     for(i in 1:nrow(files_to_access)){
       row = files_to_access[i,]
-      file_path = paste0("www\\dfo\\",row$cosewic_common_name,"\\",row$legal_population,"\\cell_",row$cell_id,".gpkg")
+      file_path = paste0("www\\dfo\\",row$cosewic_common_name,"\\",row$legal_population,"\\cell_",row$cell_id,".rds")
       if(file.exists(file_path)){
-        all_data[[i]] = sf::read_sf(file_path)
+        all_data[[i]] = readRDS(file_path)
+        # all_data[[i]] = sf::read_sf(file_path)
       }
     }
-    # browser()
+
     if(length(all_data) > 0){
       all_data = all_data |>
         dplyr::bind_rows()
@@ -151,16 +164,17 @@ server <- function(input, output, session) {
       addProviderTiles(providers$CartoDB) |>
       addPolygons(data = bc_bound, fillColor = 'transparent',
                   color = 'black',
-                  weight = 1) |>
-      addPolygons(data = bc_grid, fillColor = 'transparent',
-                  color = 'black',
-                  weight = 1)
+                  weight = 1) #|>
+    # addPolygons(data = bc_grid, fillColor = 'transparent',
+    #             color = 'black',
+    #             weight = 1)
   })
 
   observe({
+    req(!is.null(input$spec_sel))
     l = leafletProxy('myleaf')
-      # Refresh bc grid cells. This can probably be removed,
-      # as it is just a test.
+    # Refresh bc grid cells. This can probably be removed,
+    # as it is just a test.
     l = l |>
       clearGroup('grid_cells') |>
       addPolygons(data = bc_grid_in_frame(),
@@ -170,16 +184,31 @@ server <- function(input, output, session) {
                   weight = 1,
                   group = 'grid_cells')
 
-    if(length(dfo_polys()) > 0){
-      # browser()
+    # Clear DFO shapes.
+    l = l |>
+      clearGroup('dfo_polys')
+    # Conditional usage of data based on leaflet zoom level!
+    if(map_zoom() < 10){
+      print("I know my map zoom!")
+      # Use the super simplified convex hull DFO shapes!
       l = l |>
-        clearGroup('dfo_polys') |>
-        addPolygons(data = dfo_polys(),
-                    fillColor = 'blue',
-                    fillOpacity = 0.5,
-                    color = 'black',
-                    weight = 1,
-                    group = 'dfo_polys')
+        addPolygons(
+          data = dfo_hull[dfo_hull$Common_Name_EN %in% input$spec_sel,],
+          group = 'dfo_polys'
+          )
+    } else {
+      if(length(dfo_polys()) > 0){
+        print("we have DFO polys to add to the map.")
+        # browser()
+        l = l |>
+          # clearGroup('dfo_polys') |>
+          addPolygons(data = dfo_polys(),
+                      fillColor = 'blue',
+                      fillOpacity = 0.5,
+                      color = 'black',
+                      weight = 1,
+                      group = 'dfo_polys')
+      }
     }
   })
 }

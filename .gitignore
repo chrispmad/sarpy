@@ -20,4 +20,5 @@ sarpy.Rproj
 .csv
 output/**
 app/www/dfo/**
-
+.rds
+app/www/*.rds
