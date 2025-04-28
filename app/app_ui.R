@@ -5,7 +5,7 @@ library(sf)
 library(ggplot2)
 library(shinyWidgets)
 
-source('leaflet_module.R')
+# source('leaflet_module.R')
 
 domain_select = pickerInput('dom_sel','Domain',
                             choices = c("Terrestrial","Aquatic"),

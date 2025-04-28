@@ -1,3 +1,5 @@
+source('app_ui.R')
+
 server <- function(input, output, session) {
   # ============================================
   # Load in data.
@@ -7,6 +9,7 @@ server <- function(input, output, session) {
     purrr::set_names(snakecase::to_snake_case) |>
     dplyr::mutate(legal_population = stringr::str_remove_all(legal_population, " [pP]opulation"))
   dfo_hull = readRDS("www\\dfo_sara_occurrences_in_BC_convex_hull.rds")
+  cdc = readRDS("www\\CDC_polygons_trimmed_by_DFO.rds")
 
   # ============================================
   # Establish reactives and reactive values
@@ -116,6 +119,12 @@ server <- function(input, output, session) {
         dplyr::bind_rows()
     }
     all_data
+  })
+
+  cdc_selected = reactive({
+    req(!is.null(input$spec_sel))
+    cdc |>
+      dplyr::filter(common_name %in% input$spec_sel)
   })
   # ============================================
   # Render widgets
