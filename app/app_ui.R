@@ -5,8 +5,6 @@ library(sf)
 library(ggplot2)
 library(shinyWidgets)
 
-# source('leaflet_module.R')
-
 domain_select = pickerInput('dom_sel','Domain',
                             choices = c("Terrestrial","Aquatic"),
                             selected = 'Aquatic',
@@ -23,20 +21,48 @@ toolbox = tagList(
   population_select
 )
 
+toolbox_abs_panel = absolutePanel(
+  top = '40%', left = '5%', width = '20%', height = '100%',
+  draggable = T,
+  card(
+    toolbox,
+    class = 'floating-toolbox'
+  )
+)
+
+summary_panel = card(
+  h3("Summaries", style = 'text-align:center;'),
+  bslib::card(
+    card_header(
+      "Summary 1"
+    ),
+    h5("I AM TEXT"),
+    class = 'bg-success'
+  ),
+  bslib::card(
+    card_header(
+      "Summary 2"
+    ),
+    h5("I AM TEXT"),
+    class = 'bg-primary'
+  ),
+  bslib::card(
+    card_header(
+      "Summary 3"
+    ),
+    h5("I AM TEXT"),
+    class = 'bg-warning'
+  ),
+  class = 'summary-panel'
+)
+
 ui <- page_fluid(
   shiny::includeCSS("www/my_styles.css"),
   # shiny::includeScript("www/my_js.js"),
   card(
     leafletOutput('myleaf', height = '100%'),
-    # leaflet_mod_UI('myleaf'),
     class = 'leaf-card'
   ),
-  absolutePanel(
-    top = '40%', left = '5%', width = '20%', height = '100%',
-    draggable = T,
-    card(
-      toolbox,
-      class = 'floating-toolbox'
-    )
-  )
+  toolbox_abs_panel,
+  summary_panel
 )
