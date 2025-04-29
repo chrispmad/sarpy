@@ -49,14 +49,38 @@ observe({
         )
     }
   } else {
-    if(length(dfo_polys()) > 0){
-      l = l |>
-        addPolygons(data = dfo_polys(),
-                    fillColor = 'blue',
-                    fillOpacity = 0.5,
-                    color = 'black',
-                    weight = 1,
-                    group = 'dfo_polys')
+    if(nrow(dfo_detail_polys_to_add()) > 0 & dfo_polys_added() == F){
+
+      dfo_polys_added(TRUE)
+      rows_to_add = nrow(dfo_detail_polys_to_add())
+      rows_and_chunks = data.frame(row_num = 1:rows_to_add) |>
+        dplyr::mutate(chunk = as.numeric(gl(n = 5, k = ceiling(length(row_num) / 5),
+                                 length = length(row_num))))
+      # Add chunk identifier to each row of reactiveVal dfo polys to add.
+      dfo_detail_polys_to_add(
+        cbind(
+          dfo_detail_polys_to_add(),
+          rows_and_chunks |> dplyr::select(chunk)
+        )
+      )
+
+      withProgress(message = 'Adding DFO polygons...', value = 0, {
+        # browser()
+        for(i in 1:max(rows_and_chunks$chunk)){
+          # Pull out rows of the chunk we want to add, add as Polygon.
+          l = l |>
+            addPolygons(data = dfo_detail_polys_to_add()[dfo_detail_polys_to_add()$chunk == i,],
+                        fillColor = 'blue',
+                        fillOpacity = 0.5,
+                        color = 'black',
+                        weight = 1,
+                        group = 'dfo_polys')
+          # As chunks are added to the leaflet map, remove them from the queue
+          # dfo_detail_polys_to_add(dfo_detail_polys_to_add()[dfo_detail_polys_to_add()$chunk != i,])
+          # if(nrow(dfo_detail_polys_to_add())) dfo_polys_added(TRUE)
+          incProgress(1/max(rows_and_chunks$chunk), detail = paste0("Data chunk ", i, " of ",max(rows_and_chunks$chunk)))
+        }
+      })
     }
   }
 })

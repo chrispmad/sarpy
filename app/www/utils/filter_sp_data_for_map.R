@@ -27,3 +27,11 @@ cdc_selected = reactive({
   cdc |>
     dplyr::filter(common_name %in% input$spec_sel)
 })
+
+# Initial loading of the 'dfo_polys_to_add' queue.
+observe({
+  if(nrow(dfo_polys()) > 0 & nrow(dfo_detail_polys_to_add()) == 0 & dfo_polys_added() == FALSE){
+    dfo_detail_polys_to_add(dfo_polys())
+  }
+})
+

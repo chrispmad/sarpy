@@ -1,5 +1,7 @@
 map_bounds = reactiveVal()
 map_zoom = reactiveVal()
+dfo_detail_polys_to_add = reactiveVal(data.frame()[0,])
+dfo_polys_added = reactiveVal(FALSE)
 
 output$leaf_zoom = renderText({
   req(!is.null(map_zoom()))
@@ -23,7 +25,8 @@ observeEvent(input$myleaf_bounds, {
 
 observeEvent(input$myleaf_zoom,{
   map_zoom(input$myleaf_zoom)
-})
+}) |>
+  debounce(millis = 1000)
 
 bc_grid_in_frame = reactive({
   req(input$myleaf_bounds)
@@ -82,7 +85,9 @@ observe({
                     session=session)
   # Reset population selector to NA so that the order of reactive expressions works well
   updatePickerInput('pop_sel',choices = NULL, session=session)
-  print("updated spec_sel input")
+  # Also refresh the reactiveVal that tracks if detailed DFO polygons have been
+  # added to the map
+  dfo_polys_added(FALSE)
 })
 # Risk status table further filtered by species (this filtering WORKS)
 rs_sp = reactive({
