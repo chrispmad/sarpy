@@ -48,25 +48,27 @@ saveRDS(bc_g, "app/www/bc_grid.rds")
 # arrow::write_parquet(bc_g, "app/www/bc_grid.parquet")
 
 dfo = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species.gpkg")
-dfo_fixed = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
 dfo_ch = sf::read_sf("data/dfo_sara_critical_habitat_bc.gpkg")
 cdc = readRDS("app/www/CDC_polygons_trimmed_by_DFO.rds")
 
-dfo_fixed = repair_geoms(dfo)
+if(!file.exists("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")){
+  dfo_fixed = repair_geoms(dfo)
+  dfo_fixed = sf::write_sf(dfo_fixed, "data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
+} else {
+  dfo_fixed = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
+}
+
+dfo_hull = sf::st_convex_hull(dfo_fixed)
 
 dfo = sf::st_transform(dfo, 4326)
-# dfo_fixed = sf::write_sf(dfo_fixed, "data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
-# dfo_somewhat_small = sf::st_simplify(dfo_fixed, preserveTopology = T, dTolerance = 100)
-dfo_hull = sf::st_convex_hull(dfo_fixed)
-# dfo_very_small = sf::st_simplify(dfo_fixed, preserveTopology = T, dTolerance = 10000)
-saveRDS(dfo_hull, "app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
-# saveRDS(dfo_somewhat_small, "app/www/dfo_sara_occurrences_in_BC_somewhat_simplified.rds")
-# saveRDS(dfo_very_small, "app/www/dfo_sara_occurrences_in_BC_very_simplified.rds")
-# dfo_s = sf::st_simplify(dfo)
+dfo_fixed = sf::st_transform(dfo_fixed, 4326)
+dfo_hull = sf::st_transform(dfo_hull, 4326)
 
-# dfo_s = sf::st_transform(dfo_s, 4326)
+saveRDS(dfo_hull, "app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
+
 dfo_ch = sf::st_transform(dfo_ch, 4326)
-cdc = sf::st_transform(cdc, 4326)
+
+saveRDS(dfo_ch, "app/www/dfo_critical_habitat.rds")
 
 # Split dfo data by name, population, then by bc grid cell ID.
 dfo |>
