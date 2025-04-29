@@ -48,21 +48,22 @@ saveRDS(bc_g, "app/www/bc_grid.rds")
 # arrow::write_parquet(bc_g, "app/www/bc_grid.parquet")
 
 dfo = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species.gpkg")
+dfo_fixed = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
 dfo_ch = sf::read_sf("data/dfo_sara_critical_habitat_bc.gpkg")
 cdc = readRDS("app/www/CDC_polygons_trimmed_by_DFO.rds")
 
-dfo_fixed = repair_geoms(dfo)
+# dfo_fixed = repair_geoms(dfo)
 # dfo_fixed = sf::write_sf(dfo_fixed, "data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
 # dfo_somewhat_small = sf::st_simplify(dfo_fixed, preserveTopology = T, dTolerance = 100)
-dfo_hull = sf::st_convex_hull(dfo_fixed)
+# dfo_hull = sf::st_convex_hull(dfo_fixed)
 # dfo_very_small = sf::st_simplify(dfo_fixed, preserveTopology = T, dTolerance = 10000)
-saveRDS(dfo_hull, "app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
+# saveRDS(dfo_hull, "app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
 # saveRDS(dfo_somewhat_small, "app/www/dfo_sara_occurrences_in_BC_somewhat_simplified.rds")
 # saveRDS(dfo_very_small, "app/www/dfo_sara_occurrences_in_BC_very_simplified.rds")
-dfo_s = sf::st_simplify(dfo)
+# dfo_s = sf::st_simplify(dfo)
 
 dfo = sf::st_transform(dfo, 4326)
-dfo_s = sf::st_transform(dfo_s, 4326)
+# dfo_s = sf::st_transform(dfo_s, 4326)
 dfo_ch = sf::st_transform(dfo_ch, 4326)
 cdc = sf::st_transform(cdc, 4326)
 
@@ -87,8 +88,17 @@ dfo |>
         broken_geometries
       )
     }
-    okay_geometries |>
+    # okay_geometries_summed = okay_geometries |>
+    #   dplyr::group_by(Common_Name_EN,Population_EN) |>
+    #   dplyr::summarise()
+
+    okay_geometries_w_cell_id = okay_geometries |>
+      dplyr::mutate(row_id = dplyr::row_number()) |>
       sf::st_join(sf::st_as_sf(bc_g)) |>
+      dplyr::filter(!duplicated(row_id)) |>
+      dplyr::select(-row_id)
+
+    okay_geometries_w_cell_id |>
       dplyr::group_by(Common_Name_EN, Population_EN, cell_id) |>
       dplyr::group_split() |>
       purrr::iwalk( ~ {
