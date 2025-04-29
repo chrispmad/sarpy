@@ -23,7 +23,8 @@ observeEvent(input$myleaf_bounds, {
 
 observeEvent(input$myleaf_zoom,{
   map_zoom(input$myleaf_zoom)
-})
+}) |>
+  debounce(millis = 1000)
 
 bc_grid_in_frame = reactive({
   req(input$myleaf_bounds)
