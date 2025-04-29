@@ -18,4 +18,5 @@ server <- function(input, output, session) {
   # ============================================
   # Render widgets
   source('utils/leaflet_map_logic.R', local = TRUE)
+  source('utils/render_summary_numbers.R', local = TRUE)
 }
