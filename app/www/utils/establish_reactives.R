@@ -1,6 +1,16 @@
 map_bounds = reactiveVal()
 map_zoom = reactiveVal()
 
+output$leaf_zoom = renderText({
+  req(!is.null(map_zoom()))
+  map_zoom()
+})
+
+output$dfo_geom_type = renderText({
+  req(!is.null(map_zoom()))
+  ifelse(map_zoom() < 10, "Simplified", "Detailed")
+})
+
 observeEvent(input$myleaf_bounds, {
   bounds = input$myleaf_bounds
   bounds$south = bounds$south - 2 # correction to include all of visible leaflet map
@@ -39,7 +49,37 @@ bc_grid_in_frame = reactive({
 rs_d = reactive(riskstat |> dplyr::filter(domain %in% input$dom_sel))
 
 observe({
-  updatePickerInput('spec_sel', choices = unique(rs_d()$cosewic_common_name)[order(unique(rs_d()$cosewic_common_name))], session=session)
+  spec_choices = unique(rs_d()$cosewic_common_name)
+  spec_choices = spec_choices[order(unique(spec_choices))] # Sort
+  # Count number of rows per species in DFO and CDC
+  dfo_r_p_sp = dfo_hull |>
+    sf::st_drop_geometry() |>
+    dplyr::select(common_name = Common_Name_EN) |>
+    dplyr::count(common_name)
+
+  dfo_data_availability = data.frame(common_name = spec_choices) |>
+    dplyr::left_join(dfo_r_p_sp) |>
+    dplyr::mutate(data_present = ifelse(n > 0 & !is.na(n), "✅", "❌"))
+
+  cdc_r_p_sp = cdc |>
+    sf::st_drop_geometry() |>
+    dplyr::select(common_name = ENG_NAME) |>
+    dplyr::count(common_name)
+
+  cdc_data_availability = data.frame(common_name = spec_choices) |>
+    dplyr::left_join(cdc_r_p_sp) |>
+    dplyr::mutate(data_present = ifelse(n > 0 & !is.na(n), "✅", "❌"))
+
+  # Update species selection options based on which domain has been selected.
+  updatePickerInput('spec_sel',
+                    choices = spec_choices,
+                    choicesOpt = list(
+                      subtext = paste0("DFO:",
+                                       dfo_data_availability$data_present,
+                                       "; CDC:",
+                                       cdc_data_availability$data_present
+                                       )),
+                    session=session)
   # Reset population selector to NA so that the order of reactive expressions works well
   updatePickerInput('pop_sel',choices = NULL, session=session)
   print("updated spec_sel input")
@@ -53,6 +93,8 @@ rs_sp = reactive({
 })
 
 observe({
+  # Update population selection options based on which species has/have been
+  # selected.
   req(nrow(rs_sp()) > 0)
   if(!is.na(unique(rs_sp()$legal_population)[1])){
     updatePickerInput('pop_sel',

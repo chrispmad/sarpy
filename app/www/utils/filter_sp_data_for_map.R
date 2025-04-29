@@ -1,5 +1,6 @@
 dfo_polys = reactive({
-  req(!is.null(input$spec_sel), nrow(rs_p()) > 0)
+  req(!is.null(input$spec_sel))
+  req(nrow(rs_p()) > 0)
   all_data = list()
   files_to_access = tidyr::crossing(cosewic_common_name = rs_p()$cosewic_common_name,
                                     legal_population = rs_p()$legal_population,
@@ -7,16 +8,16 @@ dfo_polys = reactive({
   )
   for(i in 1:nrow(files_to_access)){
     row = files_to_access[i,]
-    file_path = paste0("www\\dfo\\",row$cosewic_common_name,"\\",row$legal_population,"\\cell_",row$cell_id,".rds")
+    file_path = paste0("dfo\\",row$cosewic_common_name,"\\",row$legal_population,"\\cell_",row$cell_id,".rds")
     if(file.exists(file_path)){
       all_data[[i]] = readRDS(file_path)
-      # all_data[[i]] = sf::read_sf(file_path)
     }
   }
 
   if(length(all_data) > 0){
     all_data = all_data |>
       dplyr::bind_rows()
+    print(paste0("DFO has ",nrow(all_data), " rows."))
   }
   all_data
 })

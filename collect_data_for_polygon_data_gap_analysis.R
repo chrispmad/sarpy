@@ -252,6 +252,7 @@ for(i in 1:nrow(dat)){
 
 # Save the trimmed CDC polygons.
 # sf::write_sf(cdc_trimmed, "app/www/CDC_polygons_trimmed_by_DFO.gpkg")
+cdc_trimmed = sf::st_transform(cdc_trimmed, 4326)
 saveRDS(cdc_trimmed, "app/www/CDC_polygons_trimmed_by_DFO.rds")
 # openxlsx::saveWorkbook(wb, "output/CDCREsultsExport_w_DFO_CDC_spatial_match.xlsx", overwrite = T)
 openxlsx::write.xlsx(dat |> dplyr::select(-c(population,common_name)), "output/CDCResultsExport_w_spatial_match.xlsx")

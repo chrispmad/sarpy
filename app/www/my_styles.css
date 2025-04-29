@@ -2,6 +2,14 @@ body {
   overflow: hidden !important
 }
 
+.control-label {
+  font-size: larger !important;
+}
+
+.bootstrap-select, .bslib-card {
+  box-shadow: 2px 2px 1px 1px rgba(0, 0, 100, 0.2);
+}
+
 .floating-toolbox {
     position: absolute;
     z-index: 1000;
@@ -9,6 +17,8 @@ body {
     max-height: 100%;
     opacity: 0.6;
     transition: 0.5s all;
+    text-align: center;
+    overflow: visible;
 }
 
 .floating-toolbox:hover {
@@ -16,7 +26,7 @@ body {
 }
 
 .draggable {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .leaf-card {
@@ -29,6 +39,7 @@ body {
   top: 0; right: 0;
   width: 20%; height: 98%;
   position: absolute;
+  z-index: 1000;
   opacity: 0.6;
   transition: 0.5s all;
   transform: translateX(50%);

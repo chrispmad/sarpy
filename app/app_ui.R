@@ -5,6 +5,14 @@ library(sf)
 library(ggplot2)
 library(shinyWidgets)
 
+current_zoom = span("Current map zoom: ",textOutput('leaf_zoom'),
+                    style = 'display:ruby;') |>
+  bslib::tooltip('1 is minimum zoom, 18 is most zoomed in')
+
+dfo_data_fidelity = span("DFO geometries displayed: ",textOutput('dfo_geom_type'),
+                         style = 'display:ruby;') |>
+  bslib::tooltip('To enhance app performance, simplified geometries are shown for DFO up to a zoom level of 10.')
+
 domain_select = pickerInput('dom_sel','Domain',
                             choices = c("Terrestrial","Aquatic"),
                             selected = 'Aquatic',
@@ -15,7 +23,9 @@ population_select = pickerInput('pop_sel','Population',choices = NULL,multiple =
                                 options = pickerOptions(container = 'body',liveSearch = T))
 
 toolbox = tagList(
-  h3("Toolbox"),
+  h2("Toolbox"),
+  current_zoom,
+  dfo_data_fidelity,
   domain_select,
   species_select,
   population_select
