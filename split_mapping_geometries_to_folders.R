@@ -52,17 +52,18 @@ dfo_fixed = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.
 dfo_ch = sf::read_sf("data/dfo_sara_critical_habitat_bc.gpkg")
 cdc = readRDS("app/www/CDC_polygons_trimmed_by_DFO.rds")
 
-# dfo_fixed = repair_geoms(dfo)
+dfo_fixed = repair_geoms(dfo)
+
+dfo = sf::st_transform(dfo, 4326)
 # dfo_fixed = sf::write_sf(dfo_fixed, "data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
 # dfo_somewhat_small = sf::st_simplify(dfo_fixed, preserveTopology = T, dTolerance = 100)
-# dfo_hull = sf::st_convex_hull(dfo_fixed)
+dfo_hull = sf::st_convex_hull(dfo_fixed)
 # dfo_very_small = sf::st_simplify(dfo_fixed, preserveTopology = T, dTolerance = 10000)
-# saveRDS(dfo_hull, "app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
+saveRDS(dfo_hull, "app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
 # saveRDS(dfo_somewhat_small, "app/www/dfo_sara_occurrences_in_BC_somewhat_simplified.rds")
 # saveRDS(dfo_very_small, "app/www/dfo_sara_occurrences_in_BC_very_simplified.rds")
 # dfo_s = sf::st_simplify(dfo)
 
-dfo = sf::st_transform(dfo, 4326)
 # dfo_s = sf::st_transform(dfo_s, 4326)
 dfo_ch = sf::st_transform(dfo_ch, 4326)
 cdc = sf::st_transform(cdc, 4326)
