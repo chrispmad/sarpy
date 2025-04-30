@@ -18,9 +18,8 @@ repair_geoms = function(d){
       dplyr::filter(!sf::st_is_valid(geom))
     d_good_geoms = d |>
       dplyr::filter(sf::st_is_valid(geom))
-
     d_fixed_geoms = wdpar::st_repair_geometry(d_bad_geoms)
-
+    d_fixed_geoms = d_fixed_geoms |> dplyr::rename(geom = geometry)
     output = dplyr::bind_rows(d_good_geoms, d_fixed_geoms)
   } else {
     output = d
@@ -50,12 +49,6 @@ if(!file.exists("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")){
   dfo_fixed = sf::write_sf(dfo_fixed, "data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
 } else {
   dfo_fixed = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
-}
-
-# Ensure we have the correct column name for geometries in dfo_fixed?
-# Ensure this is working properly...
-if('geometry' %in% names(dfo_fixed)){
-  dfo_fixed = dfo_fixed |> dplyr::rename(geom = geometry)
 }
 
 dfo_hull = sf::st_convex_hull(dfo_fixed)
