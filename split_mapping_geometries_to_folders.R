@@ -40,12 +40,6 @@ bc = bc |> sf::st_transform(4326)
 
 saveRDS(bc, "app/www/bc_bound.rds")
 saveRDS(bc_g, "app/www/bc_grid.rds")
-# sf::write_sf(bc, "app/www/bc_bound.gpkg")
-# sf::write_sf(bc_g, "app/www/bc_grid.gpkg")
-# bc = arrow::as_arrow_table(bc)
-# bc_g = arrow::as_arrow_table(bc_g)
-# arrow::write_parquet(bc, "app/www/bc_bound.parquet")
-# arrow::write_parquet(bc_g, "app/www/bc_grid.parquet")
 
 dfo = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species.gpkg")
 dfo_ch = sf::read_sf("data/dfo_sara_critical_habitat_bc.gpkg")
@@ -58,8 +52,15 @@ if(!file.exists("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")){
   dfo_fixed = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
 }
 
+# Ensure we have the correct column name for geometries in dfo_fixed?
+# Ensure this is working properly...
+if('geometry' %in% names(dfo_fixed)){
+  dfo_fixed = dfo_fixed |> dplyr::rename(geom = geometry)
+}
+
 dfo_hull = sf::st_convex_hull(dfo_fixed)
 
+# Check that we only have one column for geometries called 'geom'
 dfo = sf::st_transform(dfo, 4326)
 dfo_fixed = sf::st_transform(dfo_fixed, 4326)
 dfo_hull = sf::st_transform(dfo_hull, 4326)
