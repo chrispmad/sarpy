@@ -27,15 +27,12 @@ repair_geoms = function(d){
   return(output)
 }
 
-bc = bcmaps::bc_bound()
+bc = bcmaps::bc_bound() |> sf::st_transform(4326)
 
-bc_g = sf::st_as_sf(sf::st_make_grid(x = bc, n = c(100,100)))
+bc_g = sf::st_as_sf(sf::st_make_grid(x = bc, n = c(200,200)))
 
 bc_g = bc_g |>
-  dplyr::mutate(cell_id = row_number()) |>
-  sf::st_transform(4326)
-
-bc = bc |> sf::st_transform(4326)
+  dplyr::mutate(cell_id = row_number())
 
 ggplot() + geom_sf(data = bc) + geom_sf(data = bc_g, fill = 'transparent')
 
@@ -95,14 +92,14 @@ dfo |>
         broken_geometries
       )
     }
+    # # confirm correct CRS
+    # okay_geometries = sf::st_transform(okay_geometries, 4326)
 
     # Identify which grid cells overlap with these geometries
-    bc_g_overlap = bc_g |> sf::st_filter(okay_geometries)
-    # okay_geometries_w_cell_id = okay_geometries |>
-    #   dplyr::mutate(row_id = dplyr::row_number()) |>
-    #   sf::st_join(sf::st_as_sf(bc_g)) |>
-    #   dplyr::filter(!duplicated(row_id)) |>
-    #   dplyr::select(-row_id)
+    bc_g_overlap = bc_g |>
+      sf::st_transform(sf::st_crs(okay_geometries)) |>
+      sf::st_filter(okay_geometries) |>
+      sf::st_transform(4326)
 
     # Use the list of grid cells that overlapped with the geometry in question
     # to population new columns in a 'cells_w_sp' object.
@@ -121,6 +118,22 @@ dfo |>
       dir.create(the_folder,recursive = T)
     }
     saveRDS(bc_g_overlap, paste0(the_folder,"/grid_cells.rds"))
+    # Also save a high-res polygon in the same folder
+    high_res_polygon = okay_geometries |>
+      dplyr::group_by(Common_Name_EN,Population_EN) |>
+      dplyr::summarise(.groups = 'drop') |>
+      dplyr::ungroup() |>
+      sf::st_transform(4326)
+    # Simplify the geometries a bit? Use a tryCatch so if it breaks, we just
+    # retain the original geometry.
+
+    high_res_polygon = tryCatch(
+      expr = sf::st_simplify(high_res_polygon),
+      error = function(e) return(high_res_polygon)
+    )
+    high_res_polygon = high_res_polygon |> sf::st_transform(4326)
+    # high_res_polygon = rmapshaper::ms_simplify(high_res_polygon)
+    saveRDS(high_res_polygon, paste0(the_folder,"/highres_polygon.rds"))
   }, .progress = TRUE)
 
 # Search the BC Data Catalogue's "known fish distribution" layer for

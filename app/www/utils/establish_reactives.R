@@ -1,50 +1,50 @@
-map_bounds = reactiveVal()
-map_zoom = reactiveVal()
+# map_bounds = reactiveVal()
+# map_zoom = reactiveVal()
 
-output$leaf_zoom = renderText({
-  req(!is.null(map_zoom()))
-  map_zoom()
-})
+# output$leaf_zoom = renderText({
+#   req(!is.null(map_zoom()))
+#   map_zoom()
+# })
 
-output$dfo_geom_type = renderText({
-  req(!is.null(map_zoom()))
-  ifelse(map_zoom() < 10, "Simplified", "Detailed")
-})
+# output$dfo_geom_type = renderText({
+#   req(!is.null(map_zoom()))
+#   ifelse(map_zoom() < 10, "Simplified", "Detailed")
+# })
 
-observeEvent(input$myleaf_bounds, {
-  bounds = input$myleaf_bounds
-  bounds$south = bounds$south - 2 # correction to include all of visible leaflet map
-  if(bounds$north > 90) bounds$north = 60.00069
-  if(bounds$south < 48) bounds$south = 48
-  if(bounds$east > -115) bounds$east = -114.08890
-  if(bounds$west < -140) bounds$west = -139.01451
-  map_bounds(bounds)
-})
+# observeEvent(input$myleaf_bounds, {
+#   bounds = input$myleaf_bounds
+#   bounds$south = bounds$south - 2 # correction to include all of visible leaflet map
+#   if(bounds$north > 90) bounds$north = 60.00069
+#   if(bounds$south < 48) bounds$south = 48
+#   if(bounds$east > -115) bounds$east = -114.08890
+#   if(bounds$west < -140) bounds$west = -139.01451
+#   map_bounds(bounds)
+# })
 
-observeEvent(input$myleaf_zoom,{
-  map_zoom(input$myleaf_zoom)
-}) |>
-  debounce(millis = 1000)
+# observeEvent(input$myleaf_zoom,{
+#   map_zoom(input$myleaf_zoom)
+# }) |>
+#   debounce(millis = 1000)
 
-bc_grid_in_frame = reactive({
-  req(input$myleaf_bounds)
-  map_bounds_tbl = map_bounds() |>
-    tidyr::as_tibble()
-  map_bounds_sf = dplyr::bind_rows(
-    sf::st_as_sf(map_bounds_tbl[,c(1:2)], coords = c("east","north"),crs = 4326),
-    sf::st_as_sf(map_bounds_tbl[,c(3:4)], coords = c("west","south"),crs = 4326)
-  ) |>
-    sf::st_bbox() |>
-    sf::st_as_sfc() |>
-    sf::st_as_sf()
-  output = bc_grid |>
-    sf::st_filter(
-      map_bounds_sf
-    )
-  print(paste0(nrow(output), " cells are in frame"))
-  output
-}) |>
-  shiny::debounce(millis = 1000)
+# bc_grid_in_frame = reactive({
+#   req(input$myleaf_bounds)
+#   map_bounds_tbl = map_bounds() |>
+#     tidyr::as_tibble()
+#   map_bounds_sf = dplyr::bind_rows(
+#     sf::st_as_sf(map_bounds_tbl[,c(1:2)], coords = c("east","north"),crs = 4326),
+#     sf::st_as_sf(map_bounds_tbl[,c(3:4)], coords = c("west","south"),crs = 4326)
+#   ) |>
+#     sf::st_bbox() |>
+#     sf::st_as_sfc() |>
+#     sf::st_as_sf()
+#   output = bc_grid |>
+#     sf::st_filter(
+#       map_bounds_sf
+#     )
+#   print(paste0(nrow(output), " cells are in frame"))
+#   output
+# }) |>
+#   shiny::debounce(millis = 1000)
 
 # Risk status table filtered by domain
 rs_d = reactive(riskstat |> dplyr::filter(domain %in% input$dom_sel))

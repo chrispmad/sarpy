@@ -16,7 +16,15 @@ library(readr)
 
 # map_pal_select = radioButtons('map_pal_sel', label = "Colour Map By...", choices = c("Dataset","Species","Population"), selected = "Species", inline = T)
 
-dataset_select = checkboxGroupInput("dataset_sel","Datasets to Plot",choices = c('DFO',"DFO CH","CDC","KFO"), selected = c('DFO',"DFO CH","CDC","KFO"), inline = T)
+database_choices = c('DFO Occurrences, Simple (DFO)' = 'DFO',
+                     'DFO Occurrences, High-res (DFO HR)' = "DFO HR",
+                     'DFO Critical Habitat (DFO CH)' = "DFO CH",
+                     'Conservation Data Centre (CDC)' = "CDC",
+                     'Known Fish Occurrences (KFO)' = "KFO")
+
+dataset_select = checkboxGroupInput("dataset_sel","Datasets to Plot",
+                                    choices = database_choices,
+                                    selected = database_choices)
 
 domain_select = pickerInput('dom_sel','Domain',
                             choices = c("Terrestrial","Aquatic"),
@@ -38,7 +46,7 @@ toolbox = tagList(
 )
 
 toolbox_abs_panel = absolutePanel(
-  top = '30%', left = '5%', width = '20%', height = '100%',
+  top = '30%', left = '5%', width = '25%', height = '100%',
   draggable = T,
   card(
     toolbox,

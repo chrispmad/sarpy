@@ -33,7 +33,7 @@ dfo_polys_hr = reactive({
   )
   for(i in 1:nrow(files_to_access)){
     row = files_to_access[i,]
-    file_path = paste0("dfo/",row$cosewic_common_name,"/",row$legal_population,"/highres_polygons.rds")
+    file_path = paste0("dfo/",row$cosewic_common_name,"/",row$legal_population,"/highres_polygon.rds")
     if(file.exists(file_path)){
       all_data[[i]] = readRDS(file_path)
     }
