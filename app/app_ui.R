@@ -4,14 +4,19 @@ library(leaflet)
 library(sf)
 library(ggplot2)
 library(shinyWidgets)
+library(readr)
 
-current_zoom = span("Current map zoom: ",textOutput('leaf_zoom'),
-                    style = 'display:ruby;') |>
-  bslib::tooltip('1 is minimum zoom, 18 is most zoomed in')
+# current_zoom = span("Current map zoom: ",textOutput('leaf_zoom'),
+#                     style = 'display:ruby;') |>
+#   bslib::tooltip('1 is minimum zoom, 18 is most zoomed in')
 
-dfo_data_fidelity = span("DFO geometries displayed: ",textOutput('dfo_geom_type'),
-                         style = 'display:ruby;') |>
-  bslib::tooltip('To enhance app performance, simplified geometries are shown for DFO up to a zoom level of 10.')
+# dfo_data_fidelity = span("DFO geometries displayed: ",textOutput('dfo_geom_type'),
+#                          style = 'display:ruby;') |>
+#   bslib::tooltip('To enhance app performance, simplified geometries are shown for DFO up to a zoom level of 10.')
+
+# map_pal_select = radioButtons('map_pal_sel', label = "Colour Map By...", choices = c("Dataset","Species","Population"), selected = "Species", inline = T)
+
+dataset_select = checkboxGroupInput("dataset_sel","Datasets to Plot",choices = c('DFO',"DFO CH","CDC","KFO"), selected = c('DFO',"DFO CH","CDC","KFO"), inline = T)
 
 domain_select = pickerInput('dom_sel','Domain',
                             choices = c("Terrestrial","Aquatic"),
@@ -24,15 +29,16 @@ population_select = pickerInput('pop_sel','Population',choices = NULL,multiple =
 
 toolbox = tagList(
   h2("Toolbox"),
-  current_zoom,
-  dfo_data_fidelity,
+  # current_zoom,
+  # dfo_data_fidelity,
+  dataset_select,
   domain_select,
   species_select,
   population_select
 )
 
 toolbox_abs_panel = absolutePanel(
-  top = '40%', left = '5%', width = '20%', height = '100%',
+  top = '30%', left = '5%', width = '20%', height = '100%',
   draggable = T,
   card(
     toolbox,

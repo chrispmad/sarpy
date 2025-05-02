@@ -29,13 +29,15 @@ repair_geoms = function(d){
 
 bc = bcmaps::bc_bound()
 
-bc_g = sf::st_as_sf(sf::st_make_grid(x = bc, n = c(25,25)))
+bc_g = sf::st_as_sf(sf::st_make_grid(x = bc, n = c(100,100)))
 
 bc_g = bc_g |>
   dplyr::mutate(cell_id = row_number()) |>
   sf::st_transform(4326)
 
 bc = bc |> sf::st_transform(4326)
+
+ggplot() + geom_sf(data = bc) + geom_sf(data = bc_g, fill = 'transparent')
 
 saveRDS(bc, "app/www/bc_bound.rds")
 saveRDS(bc_g, "app/www/bc_grid.rds")
@@ -58,7 +60,15 @@ dfo = sf::st_transform(dfo, 4326)
 dfo_fixed = sf::st_transform(dfo_fixed, 4326)
 dfo_hull = sf::st_transform(dfo_hull, 4326)
 
-saveRDS(dfo_hull, "app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
+# saveRDS(dfo_hull, "app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
+dfo_hull = readRDS("app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
+
+dfo_sp_count = dfo_hull |>
+  sf::st_drop_geometry() |>
+  dplyr::select(common_name = Common_Name_EN, population_name = Population_EN) |>
+  dplyr::count(common_name, population_name)
+
+saveRDS(dfo_sp_count, "app/www/dfo_species_row_count.rds")
 
 dfo_ch = sf::st_transform(dfo_ch, 4326)
 
@@ -85,37 +95,45 @@ dfo |>
         broken_geometries
       )
     }
-    # okay_geometries_summed = okay_geometries |>
-    #   dplyr::group_by(Common_Name_EN,Population_EN) |>
-    #   dplyr::summarise()
 
-    okay_geometries_w_cell_id = okay_geometries |>
-      dplyr::mutate(row_id = dplyr::row_number()) |>
-      sf::st_join(sf::st_as_sf(bc_g)) |>
-      dplyr::filter(!duplicated(row_id)) |>
-      dplyr::select(-row_id)
+    # Identify which grid cells overlap with these geometries
+    bc_g_overlap = bc_g |> sf::st_filter(okay_geometries)
+    # okay_geometries_w_cell_id = okay_geometries |>
+    #   dplyr::mutate(row_id = dplyr::row_number()) |>
+    #   sf::st_join(sf::st_as_sf(bc_g)) |>
+    #   dplyr::filter(!duplicated(row_id)) |>
+    #   dplyr::select(-row_id)
 
-    okay_geometries_w_cell_id |>
-      dplyr::group_by(Common_Name_EN, Population_EN, cell_id) |>
-      dplyr::group_split() |>
-      purrr::iwalk( ~ {
-        # Create containing folder for this common name / population name / cell id
-
-        the_common_name = unique(.x$Common_Name_EN)
-        the_pop_name = unique(.x$Population_EN)
-        the_cell_id = unique(.x$cell_id)
-
-        the_folder = paste0("app/www/dfo/",the_common_name,"/",the_pop_name)
-        if(!dir.exists(the_folder)){
-          dir.create(the_folder,recursive = T)
-        }
-        saveRDS(.x, paste0(the_folder,"/cell_",the_cell_id,".rds"))
-        # sf::write_sf(.x, paste0(the_folder,"/cell_",the_cell_id,".gpkg"))
-        # geoarrow::write_geo(.x, paste0(the_folder,"/cell_",the_cell_id,".parquet"))
-        # arrow::write_parquet(arrow::as_arrow_table(.x),paste0(the_folder,"/cell_",the_cell_id,".parquet"))
-        # qs::qsave(.x, paste0(the_folder,"/cell_",the_cell_id,".qs"))
-      }
-      )
+    # Use the list of grid cells that overlapped with the geometry in question
+    # to population new columns in a 'cells_w_sp' object.
+    # cells_w_sp = bc_g[bc_g$cell_id %in% unique(okay_geometries_w_cell_id$cell_id),]
+    the_common_name = unique(okay_geometries$Common_Name_EN)
+    the_pop_name = unique(okay_geometries$Population_EN)
+    bc_g_overlap$Common_Name_EN = the_common_name
+    bc_g_overlap$Population_EN = the_pop_name
+    the_folder = paste0("app/www/dfo/",the_common_name,"/",the_pop_name)
+    # Delete anything in the folder
+    if(dir.exists(the_folder)){
+      list.files(the_folder,pattern = '.rds', full.names = T) |> lapply(file.remove)
+    }
+    # If the folder doesn't exist, create it.
+    if(!dir.exists(the_folder)){
+      dir.create(the_folder,recursive = T)
+    }
+    saveRDS(bc_g_overlap, paste0(the_folder,"/grid_cells.rds"))
   }, .progress = TRUE)
 
+# Search the BC Data Catalogue's "known fish distribution" layer for
+# all common names above.
+all_common_names = c(unique(dfo$Common_Name_EN),unique(dfo_ch$Common_Name_EN),unique(cdc$common_name))
+all_common_names = stringr::str_to_title(all_common_names)
+all_common_names = unique(all_common_names)
 
+the_query = bcdata:::CQL(paste0(paste0("SPECIES_NAME like '",all_common_names,"'"), collapse = ' or '))
+kfo_all_species = bcdata::bcdc_query_geodata('known-bc-fish-observations-and-bc-fish-distributions') |>
+  bcdata::filter(the_query) |>
+  bcdata::collect() |>
+  sf::st_transform(4326)
+kfo_all_species_sel_cols = kfo_all_species |>
+  dplyr::select(common_name = SPECIES_NAME, SPECIES_CODE, OBSERVATION_DATE)
+saveRDS(kfo_all_species_sel_cols,"app/www/kfo_all_species.rds")
