@@ -50,3 +50,45 @@ body {
   opacity: 1;
   transform: translateX(0%);
 }
+
+.menu-icon {
+  position: absolute;
+  width: 3rem; height: 3rem;
+  font-size: larger;
+  pointer-events: none;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.inner.show {
+  width: 700px;
+}
+
+/*.shiny-bound-input.dropup, .shiny-bound-input.dropdown {
+  width: 725px;
+}*/
+
+.bootstrap-select.dropdown-menu > li > a > span {
+  display: inline-flex !important;
+}
+
+.bootstrap-select.dropdown-menu > li > a > span.text {
+  display: inline-flex !important;
+}
+
+/*#bs-select-4-2 > span.text {
+  display:inline-flex;
+  width:100%;
+}*/
+[id^="bs-select-4-"] > span.text {
+  display:inline-flex !important;
+  width: 95%;
+}
+
+.text-muted {
+  display: flex !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+}

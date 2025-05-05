@@ -14,7 +14,7 @@ output$myleaf = renderLeaflet({
     addPolygons(data = bc_bound,
                 fillColor = 'transparent',
                 color = 'transparent',
-                weight = 1) |>
+                weight = 2) |>
     addMapPane(name = 'dfo', zIndex = 400) |>
     addMapPane(name = 'dfo_ch', zIndex = 500) |>
     addMapPane(name = 'dfo_hr', zIndex = 600) |>
@@ -41,15 +41,17 @@ observe({
 
   req(!is.null(input$spec_sel))
 
+
   if('DFO CH' %in% input$dataset_sel & dfo_ch_added() == F){
-    if(length(dfo_polys()) > 0){
+    if(nrow(dfo_ch_selected()) > 0){
       l = l |>
         addPolygons(data = dfo_ch_selected(),
                     fillOpacity = 0.6,
                     fillColor = 'darkgreen',
                     color = 'black',
-                    weight = 1,
+                    weight = 2,
                     group = 'dfo_ch_polys',
+                    label = ~paste0(Common_Name_EN, " (DFO CH)"),
                     options = pathOptions(pane = 'dfo_ch'))
       dfo_ch_added(T)
     }
@@ -69,15 +71,17 @@ observe({
 
   req(!is.null(input$spec_sel))
 
+
   if('DFO' %in% input$dataset_sel & dfo_added() == F){
-    if(length(dfo_polys()) > 0){
+    if(nrow(dfo_polys()) > 0){
       l = l |>
         addPolygons(data = dfo_polys(),
                     fillOpacity = 0.6,
                     fillColor = 'blue',
                     color = 'black',
-                    weight = 1,
+                    weight = 2,
                     group = 'dfo_polys',
+                    label = ~paste0(Common_Name_EN, " (DFO)"),
                     options = pathOptions(pane = 'dfo'))
       dfo_added(T)
     }
@@ -97,15 +101,17 @@ observe({
 
   req(!is.null(input$spec_sel))
 
+
   if('DFO HR' %in% input$dataset_sel & dfo_hr_added() == F){
-    if(length(dfo_polys_hr()) > 0){
+    if(nrow(dfo_polys_hr()) > 0){
       l = l |>
         addPolygons(data = dfo_polys_hr(),
                     fillOpacity = 0.6,
                     fillColor = 'purple',
                     color = 'black',
-                    weight = 1,
+                    weight = 2,
                     group = 'dfo_polys_hr',
+                    label = ~paste0(Common_Name_EN, " (DFO HR)"),
                     options = pathOptions(pane = 'dfo_hr'))
       dfo_hr_added(T)
     }
@@ -125,15 +131,17 @@ observe({
 
   req(!is.null(input$spec_sel))
 
+
   if('CDC' %in% input$dataset_sel & cdc_added() == F){
-    if(length(dfo_polys()) > 0){
+    if(nrow(cdc_selected()) > 0){
       l = l |>
         addPolygons(data = cdc_selected(),
                     fillOpacity = 0.6,
                     fillColor = '#ed8cd8',
                     color = 'black',
-                    weight = 1,
+                    weight = 2,
                     group = 'cdc_polys',
+                    label = ~oaste0(ENG_NAME, " (CDC)"),
                     options = pathOptions(pane = 'cdc'))
       cdc_added(T)
     }
@@ -153,15 +161,17 @@ observe({
 
   req(!is.null(input$spec_sel))
 
+
   if('KFO' %in% input$dataset_sel & kfo_added() == F){
-    if(length(dfo_polys()) > 0){
+    if(nrow(kfo_selected()) > 0){
       l = l |>
         addCircleMarkers(data = kfo_selected(),
                     fillOpacity = 0.6,
                     fillColor = 'darkorange',
                     color = 'black',
-                    weight = 1,
+                    weight = 2,
                     group = 'kfo_points',
+                    label = ~paste0(common_name," (KFO)"),
                     options = pathOptions(pane = 'kfo'))
       kfo_added(T)
     }

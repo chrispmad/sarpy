@@ -24,7 +24,7 @@ database_choices = c('DFO Occurrences, Simple (DFO)' = 'DFO',
 
 dataset_select = checkboxGroupInput("dataset_sel","Datasets to Plot",
                                     choices = database_choices,
-                                    selected = database_choices)
+                                    selected = database_choices[-2])
 
 domain_select = pickerInput('dom_sel','Domain',
                             choices = c("Terrestrial","Aquatic"),
@@ -35,14 +35,19 @@ species_select = pickerInput('spec_sel','Species',choices = NULL,multiple = T,
 population_select = pickerInput('pop_sel','Population',choices = NULL,multiple = T,
                                 options = pickerOptions(container = 'body',liveSearch = T))
 
+polygon_icon = div(shiny::icon("draw-polygon"), id = 'poly_icon_d', class = 'menu-icon hidden')
+point_icon = div(shiny::icon("map-pin"), id = 'point_icon_d', class = 'menu-icon hidden')
+
 toolbox = tagList(
-  h2("Toolbox"),
+  h2("Toolbox", style = 'margin-bottom:-1rem;'),
   # current_zoom,
   # dfo_data_fidelity,
   dataset_select,
   domain_select,
   species_select,
-  population_select
+  population_select,
+  polygon_icon,
+  point_icon
 )
 
 toolbox_abs_panel = absolutePanel(
@@ -82,7 +87,7 @@ summary_panel = card(
 
 ui <- page_fluid(
   shiny::includeCSS("www/my_styles.css"),
-  # shiny::includeScript("www/my_js.js"),
+  shiny::includeScript("www/my_JS.js"),
   card(
     leafletOutput('myleaf', height = '100%'),
     class = 'leaf-card'
