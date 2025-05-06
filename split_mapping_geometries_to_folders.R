@@ -50,12 +50,12 @@ if(!file.exists("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")){
   dfo_fixed = sf::read_sf("data/dfo_sara_occurrences_in_BC_all_species_geom_fixed.gpkg")
 }
 
-dfo_hull = sf::st_convex_hull(dfo_fixed)
+# dfo_hull = sf::st_convex_hull(dfo_fixed)
 
 # Check that we only have one column for geometries called 'geom'
 dfo = sf::st_transform(dfo, 4326)
 dfo_fixed = sf::st_transform(dfo_fixed, 4326)
-dfo_hull = sf::st_transform(dfo_hull, 4326)
+# dfo_hull = sf::st_transform(dfo_hull, 4326)
 
 # saveRDS(dfo_hull, "app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
 dfo_hull = readRDS("app/www/dfo_sara_occurrences_in_BC_convex_hull.rds")
