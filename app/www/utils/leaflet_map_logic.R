@@ -16,10 +16,10 @@ output$myleaf = renderLeaflet({
                 color = 'transparent',
                 weight = 2) |>
     addMapPane(name = 'dfo', zIndex = 400) |>
-    addMapPane(name = 'dfo_ch', zIndex = 500) |>
-    addMapPane(name = 'dfo_hr', zIndex = 600) |>
-    addMapPane(name = 'cdc', zIndex = 700) |>
-    addMapPane(name = 'kfo', zIndex = 850) |>
+    addMapPane(name = 'dfo_ch', zIndex = 450) |>
+    addMapPane(name = 'dfo_hr', zIndex = 500) |>
+    addMapPane(name = 'cdc', zIndex = 550) |>
+    addMapPane(name = 'kfo', zIndex = 600) |>
     addLegend(
       position = 'topleft',
       title = "Legend",
@@ -141,7 +141,7 @@ observe({
                     color = 'black',
                     weight = 2,
                     group = 'cdc_polys',
-                    label = ~oaste0(ENG_NAME, " (CDC)"),
+                    label = ~paste0(ENG_NAME, " (CDC)"),
                     options = pathOptions(pane = 'cdc'))
       cdc_added(T)
     }

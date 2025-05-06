@@ -99,7 +99,8 @@ dfo |>
     bc_g_overlap = bc_g |>
       sf::st_transform(sf::st_crs(okay_geometries)) |>
       sf::st_filter(okay_geometries) |>
-      sf::st_transform(4326)
+      sf::st_transform(4326) |>
+      dplyr::summarise()
 
     # Use the list of grid cells that overlapped with the geometry in question
     # to population new columns in a 'cells_w_sp' object.
@@ -127,8 +128,12 @@ dfo |>
     # Simplify the geometries a bit? Use a tryCatch so if it breaks, we just
     # retain the original geometry.
 
+    # high_res_polygon = tryCatch(
+    #   expr = sf::st_simplify(high_res_polygon),
+    #   error = function(e) return(high_res_polygon)
+    # )
     high_res_polygon = tryCatch(
-      expr = sf::st_simplify(high_res_polygon),
+      expr = rmapshaper::ms_simplify(high_res_polygon),
       error = function(e) return(high_res_polygon)
     )
     high_res_polygon = high_res_polygon |> sf::st_transform(4326)

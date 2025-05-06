@@ -63,16 +63,16 @@ summary_panel = card(
   h3("Summaries", style = 'text-align:center;'),
   bslib::card(
     card_header(
-      "Summary 1"
+      "Area (km<sup>2</sup>)"
     ),
-    h5("I AM TEXT"),
+    textOutput('area_summary_text'),
     class = 'bg-success'
   ),
   bslib::card(
     card_header(
-      "Summary 2"
+      "Number of Occurrences"
     ),
-    h5("I AM TEXT"),
+    textOutput('occ_summary_text'),
     class = 'bg-primary'
   ),
   bslib::card(

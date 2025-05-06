@@ -16,7 +16,7 @@ $( document ).ready(function() {
     }
     icon_to_add.id = 'menu_icon_' + i
     icon_to_add.classList.remove('hidden')
-    icon_to_add.style.top = dropdown_labels[i].offsetTop + 'px'
+    icon_to_add.style.top = dropdown_labels[i].offsetTop - 3 + 'px'
     icon_to_add.style.left = dropdown_labels[i].offsetLeft - 20 + 'px'
     dropdown_labels[i].appendChild(icon_to_add)
   }

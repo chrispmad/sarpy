@@ -82,7 +82,7 @@ body {
   display:inline-flex;
   width:100%;
 }*/
-[id^="bs-select-4-"] > span.text {
+[id^="bs-select-"] > span.text {
   display:inline-flex !important;
   width: 95%;
 }

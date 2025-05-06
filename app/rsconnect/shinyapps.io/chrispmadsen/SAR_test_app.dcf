@@ -5,6 +5,6 @@ account: chrispmadsen
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14665616
-bundleId: 10215012
+bundleId:
 url: https://chrispmadsen.shinyapps.io/SAR_test_app/
 version: 1
