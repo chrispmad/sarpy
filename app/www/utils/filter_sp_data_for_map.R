@@ -2,10 +2,9 @@ dfo_polys = reactive({
   req(!is.null(input$spec_sel))
   req(!is.null(input$pop_sel))
   # req(nrow(rs_p()) > 0)
-  # browser()
   all_data = list()
-  files_to_access = tidyr::crossing(cosewic_common_name = input$spec_sel,
-                                    legal_population = input$pop_sel
+  files_to_access = tidyr::crossing(cosewic_common_name = spec_sel_r(),
+                                    legal_population = pop_sel_r()
   )
   for(i in 1:nrow(files_to_access)){
     row = files_to_access[i,]
@@ -28,8 +27,8 @@ dfo_polys_hr = reactive({
   req(!is.null(input$pop_sel))
 
   all_data = list()
-  files_to_access = tidyr::crossing(cosewic_common_name = input$spec_sel,
-                                    legal_population = input$pop_sel
+  files_to_access = tidyr::crossing(cosewic_common_name = spec_sel_r(),
+                                    legal_population = pop_sel_r()
   )
   for(i in 1:nrow(files_to_access)){
     row = files_to_access[i,]
@@ -50,18 +49,20 @@ dfo_polys_hr = reactive({
 dfo_ch_selected = reactive({
   req(!is.null(input$spec_sel))
   dfo_ch |>
-    dplyr::filter(Common_Name_EN %in% input$spec_sel)
+    dplyr::filter(Common_Name_EN %in% spec_sel_r()) |>
+    dplyr::filter(Population_EN %in% pop_sel_r())
 })
 
 cdc_selected = reactive({
   req(!is.null(input$spec_sel))
   cdc |>
-    dplyr::filter(common_name %in% input$spec_sel)
+    dplyr::filter(common_name %in% spec_sel_r()) |>
+    dplyr::filter(population %in% pop_sel_r())
 })
 
 # Known fish occurrences
 kfo_selected = reactive({
   req(!is.null(input$spec_sel))
   kfo_all_sp |>
-    dplyr::filter(common_name %in% input$spec_sel)
+    dplyr::filter(common_name %in% spec_sel_r())
 })

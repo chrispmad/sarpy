@@ -155,3 +155,19 @@ kfo_all_species = bcdata::bcdc_query_geodata('known-bc-fish-observations-and-bc-
 kfo_all_species_sel_cols = kfo_all_species |>
   dplyr::select(common_name = SPECIES_NAME, SPECIES_CODE, OBSERVATION_DATE)
 saveRDS(kfo_all_species_sel_cols,"app/www/kfo_all_species.rds")
+
+
+
+
+### Split DFO by natural resource regions
+regs = bcmaps::nr_regions() |> sf::st_transform(sf::st_crs(dfo))
+dfo_w_regs = dfo |>
+  sf::st_join(regs |> dplyr::select(REGION_NAME))
+
+for(i in 1:nrow(regs)){
+  print(i)
+  the_region_name = regs[i,]$REGION_NAME
+  dfo_for_file = dfo_w_regs[dfo_w_regs$REGION_NAME == the_region_name,]
+  saveRDS(dfo_for_file, file = paste0("app/www/dfo_by_region/dfo_for_",stringr::str_to_lower(the_region_name),".rds"))
+}
+

@@ -84,6 +84,11 @@ observe({
   this_sp_pops_cdc = cdc[cdc$ENG_NAME %in% input$spec_sel,]$population
   # Combine.
   this_sp_pops = c(this_sp_pops_dfo,this_sp_pops_cdc)
+  # Replace any populations that have no label (i.e., are NA), with 'Unspecified'.
+  this_sp_pops = this_sp_pops |>
+    lapply(\(x) tidyr::replace_na(x, "Unspecified")) |>
+    unlist()
+  this_sp_pops = unique(this_sp_pops)
   updatePickerInput('pop_sel',
                     choices = unique(this_sp_pops)[order(this_sp_pops)],
                     selected = unique(this_sp_pops)[1],
@@ -105,3 +110,17 @@ observe({
 #   }
 #   output
 # })
+
+layers_to_map = reactive({
+  input$dataset_sel
+})
+
+spec_sel_r = reactive({
+  input$spec_sel
+})
+
+pop_sel_r = reactive({
+  input$pop_sel |>
+    lapply(\(x) ifelse(x == 'Unspecified',NA,x)) |>
+    unlist()
+})

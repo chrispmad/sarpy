@@ -5,6 +5,9 @@ account: chrispmadsen
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14665616
-bundleId:
+bundleId: 10246836
 url: https://chrispmadsen.shinyapps.io/SAR_test_app/
 version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: __pycache__/app.cpython-313.pyc|app.py
