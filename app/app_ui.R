@@ -39,7 +39,7 @@ polygon_icon = div(shiny::icon("draw-polygon"), id = 'poly_icon_d', class = 'men
 point_icon = div(shiny::icon("map-pin"), id = 'point_icon_d', class = 'menu-icon hidden')
 
 region_type_select = pickerInput('reg_sel',"Region/District/Other",
-                            choices = c("None","Region","District","Watershed Group"))
+                            choices = c("None","Region"))
 
 region_entity_select = uiOutput('region_entity_options_ui')
 
@@ -59,8 +59,8 @@ toolbox = tagList(
     ),
     bslib::accordion_panel(
       title = "Coordinate Search",
-      textInput('lat_for_search',"Latitude",value = "50.24"),
-      textInput('lng_for_search',"Longitude",value = "-120.24"),
+      textInput('lat_for_search',"Latitude",value = "49.0538"),
+      textInput('lng_for_search',"Longitude",value = "-121.9860"),
       actionButton("coord_search_button","Search!")
     ),
     bslib::accordion_panel(
