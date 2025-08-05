@@ -26,8 +26,8 @@ observe({
       clearGroup("dfo") |>
       clearGroup("dfo_ch") |>
       clearGroup("dfo_hr") |>
-      clearGroup("cdc") |>
-      clearGroup("kfo")
+      clearGroup("cdc_polys") |>
+      clearGroup("kfo_points")
 
     # If there is at least one row in this reactive Val, plot it.
     if(nrow(dfo_data_for_region()) > 0){
