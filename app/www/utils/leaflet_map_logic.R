@@ -1,4 +1,9 @@
-
+# Make reactiveVals to hold various things: which region is selected, the
+# map click coordinates, whether or not DFO / CDC / KFO data has been added,
+# and which slice of DFO (and other datasets!) is either within the selected
+# region or overlapping with the buffered click point. We initialize these
+# reactiveVals as either NULL (i.e. empty) or as FALSE, although the
+# lat and lng for search has Cultus Lake as its default location.
 region_for_leaflet = reactiveVal()
 buffered_click_for_leaflet = reactiveVal()
 dfo_added = reactiveVal(F)
@@ -10,96 +15,11 @@ lat_for_search = reactiveVal("49.0538")
 lng_for_search = reactiveVal("-121.9860")
 dfo_data_for_region = reactiveVal()
 
-# - - - - - - - - - - -
-# REGION SELECT!
-
-# Enable user the select certain regions
-observeEvent(input$reg_sel, {
-  if(input$reg_sel == "None"){
-    region_for_leaflet = reactiveVal()
-  }
-})
-
-observeEvent(input$reg_ent_sel, {
-  req(!is.null(input$reg_ent_sel))
-
-  obj_for_map = NULL
-
-  if(input$reg_sel == "Region") {
-    obj_for_map = nr_regs |> dplyr::filter(REGION_NAME == input$reg_ent_sel) |>
-      dplyr::mutate(name_for_map = REGION_NAME)
-  }
-  region_for_leaflet(obj_for_map)
-})
-
-# - - - - - - - - - - -
-
-# - - - - - - - - - - -
-# Overlap Search Buttons
-
-# 1. We're using a region.
-observeEvent(input$reg_search_button, {
-  req(!is.null(region_for_leaflet()))
-  buffered_click_for_leaflet(NULL)
-  print("Search based on selected region!")
-  dfo_data_for_region_data = readRDS(file = paste0("dfo_by_region/dfo_for_",
-                                                   region_for_leaflet()$REGION_NAME |> stringr::str_to_lower()
-                                                   ,".rds"))
-
-  dfo_data_for_region_data = dfo_data_for_region_data |>
-    dplyr::filter(!is.na(Common_Name_EN))
-
-  dfo_data_for_region(dfo_data_for_region_data)
-})
-
-# 2. We're using coordinates
-observeEvent(input$myleaf_click, {
-  lat_for_search(input$myleaf_click$lat)
-  updateTextInput(session = session, 'lat_for_search', value = lat_for_search())
-  lng_for_search(input$myleaf_click$lng)
-  updateTextInput(session = session, 'lng_for_search', value = lng_for_search())
-})
-
-observeEvent(input$coord_search_button, {
-  req(!is.null(lat_for_search()) & !is.null(lng_for_search()))
-  # Reset the buffered click shape for leaflet, if it has been loaded with some
-  # shape from a previous coord search.
-  buffered_click_for_leaflet(NULL)
-
-  print("Search based on selected coordinates from clicking on the map!")
-
-  lat_val = as.numeric(lat_for_search())
-  lng_val = as.numeric(lng_for_search())
-
-  clicked_point_sf = sf::st_as_sf(data.frame(lat = lat_val, lng = lng_val),
-                                  coords = c("lng","lat"),
-                                  crs = 4326)
-
-  # Find which natural resource region has been clicked.
-  clicked_reg = nr_regs |>
-    sf::st_filter(clicked_point_sf)
-  clicked_reg_name = str_to_lower(clicked_reg$REGION_NAME)
-
-  dfo_region_data_pre_overlap = readRDS(file = paste0("dfo_by_region/dfo_for_",clicked_reg_name,".rds"))
-
-  dfo_region_data_pre_overlap = dfo_region_data_pre_overlap |> dplyr::filter(!is.na(Common_Name_EN))
-
-  # Buffer clicked point.
-  clicked_point_sf_buffered = sf::st_buffer(clicked_point_sf, dist = 10000)
-  buffered_click_for_leaflet(clicked_point_sf_buffered)
-
-  # Apply a spatial overlap filter for dfo region data; put that into the
-  # dfo_data_for_region reactiveVal.
-  dfo_region_data_post_overlap = dfo_region_data_pre_overlap |>
-    sf::st_filter(clicked_point_sf_buffered)
-
-  dfo_data_for_region(dfo_region_data_post_overlap)
-})
-
 # Add simplified DFO polygons to map either from region select or from clicking
 # on the map.
 observe({
   if(!is.null(dfo_data_for_region()) | !is.null(buffered_click_for_leaflet())){
+
     # there is 0 or more rows in this reactive Val.
     l = leafletProxy('myleaf') |>
       clearGroup("dfo_for_region") |>
@@ -111,23 +31,40 @@ observe({
 
     # If there is at least one row in this reactive Val, plot it.
     if(nrow(dfo_data_for_region()) > 0){
+      # browser()
       the_names = unique(dfo_data_for_region()$Common_Name_EN)
+      the_names_sc = snakecase::to_snake_case(the_names)
+
       name_pal = leaflet::colorFactor('Spectral',the_names)
       l = l |>
         removeControl('dfo_data_for_region_legend') |>
         addLegend(title = "DFO data in region or clicked area",
-                  position = 'bottomleft', pal = name_pal, values = the_names,
+                  position = 'topright', pal = name_pal, values = the_names,
                   layerId = 'dfo_data_for_region_legend') |>
-        addPolygons(
-        data = dfo_data_for_region(),
-        label = ~Common_Name_EN,
-        color = 'black',
-        weight = 2,
-        fillColor = ~name_pal(Common_Name_EN),
-        fillOpacity = 0.8,
-        group = 'dfo_for_region',
-        options = pathOptions(pane = "dfo")
-      )
+        addLayersControl(overlayGroups = paste0("dfo_",the_names_sc),
+                         options = layersControlOptions(collapsed = F))
+
+      for(group_to_remove in input$myleaf_groups){
+        if(stringr::str_detect(group_to_remove, "dfo_[a-z]+")){
+          l = l |>
+            clearGroup(group_to_remove)
+        }
+      }
+
+      # Loop through species to add, each one gets its own layer assignment option.
+      for(common_name in the_names){
+        l = l |>
+          addPolygons(
+            data = dfo_data_for_region() |> dplyr::filter(Common_Name_EN == common_name),
+            label = ~Common_Name_EN,
+            color = 'black',
+            weight = 2,
+            fillColor = ~name_pal(Common_Name_EN),
+            fillOpacity = 0.8,
+            group = ~paste0('dfo_',snakecase::to_snake_case(Common_Name_EN)),
+            options = pathOptions(pane = "dfo")
+          )
+      }
     }
   } else {
     leafletProxy('myleaf') |>
@@ -156,8 +93,6 @@ output$myleaf = renderLeaflet({
     )
 })
 
-# Add/remove simplified DFO grid cells based on selected region
-
 # Add/remove simplified DFO grid cells based on species search
 observe({
 
@@ -165,14 +100,32 @@ observe({
   print(pop_sel_r())
 
   l = l |>
-    clearGroup("regions")
+    # Clear away any polygons that are remaining from region or coordinate searches.
+    clearGroup("regions") |>
+    clearGroup("dfo_for_region") |>
+    removeLayersControl()
+
+
+  # And clear away any species that were added in previous searches (searches
+  # are identified as being 'previous' by virtue of the containing reactiveVal
+  # "dfo_data_for_region" being NULL).
+  if(is.null(dfo_data_for_region())){
+    for(group_to_remove in input$myleaf_groups){
+      if(stringr::str_detect(group_to_remove, "dfo_[a-z]+")){
+        l = l |>
+          clearGroup(group_to_remove)
+      }
+    }
+  }
+
+
   if(!is.null(region_for_leaflet())){
     l = l |>
       clearGroup("dfo_for_region") |>
       leaflet::addPolygons(
         data = region_for_leaflet(),
         group = "regions",
-        options = pathOptions(pane = "dfo")
+        options = pathOptions(pane = "regions")
       )
   }
   if(!is.null(buffered_click_for_leaflet())){
@@ -198,7 +151,7 @@ observe({
   req(!is.null(input$spec_sel))
   # req(length(dfo_polys()) > 0)
 
-  if('DFO' %in% input$dataset_sel){
+  if('DFO' %in% input$dataset_sel & is.null(dfo_data_for_region())){
 
     # Has the user selected a population outside of DFO's options
     # for this species? If so, wipe DFO.

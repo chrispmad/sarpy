@@ -76,7 +76,7 @@ toolbox = tagList(
 )
 
 toolbox_abs_panel = absolutePanel(
-  top = '30%', left = '5%', width = '25%', height = '100%',
+  top = '15%', left = '10%', width = '25%', height = '100%',
   draggable = T,
   card(
     toolbox,

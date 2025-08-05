@@ -5,11 +5,24 @@ server <- function(input, output, session) {
 
   # ============================================
   # Load in data.
+  # Note: the 'local = TRUE' ensures that variables created or edited
+  # inside the sourced script are carried over to the global environment
+  # of the server as a whole.
   source('utils/load_in_data.R', local = TRUE)
 
   # ============================================
   # Establish reactives and reactive values
   source('utils/establish_reactives.R', local = TRUE)
+
+  # ============================================
+  # Choose to show natural resource regions or not; if so, which region.
+  source('utils/select_region.R', local = TRUE)
+
+  # ============================================
+  #  Logic for if the user presses either region / click area search button.
+  # These buttons essentially load dfo data to be visualized in the leaflet map
+  # into the dfo_data_for_region() reactiveVal.
+  source('utils/region_or_click_location_search_button_logic.R', local = TRUE)
 
   # ============================================
   # Filter spatial data for leaflet map

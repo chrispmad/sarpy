@@ -3,9 +3,12 @@
 rs_d = reactive(riskstat |> dplyr::filter(domain %in% input$dom_sel))
 
 observe({
+  # Find species choices for dropdown.
   spec_choices = unique(rs_d()$cosewic_common_name)
   spec_choices = spec_choices[order(unique(spec_choices))]
 
+  # Add in little check marks and x marks telling us whether or not there
+  # is DFO data, DFO CH data, CDC data, or KFO data for each species.
   dfo_data_availability = data.frame(common_name = spec_choices) |>
     dplyr::left_join(dfo_r_p_sp) |>
     dplyr::group_by(common_name) |>
@@ -66,10 +69,15 @@ observe({
   updatePickerInput('pop_sel',choices = NULL, session=session)
   print("updated spec_sel input")
 })
-# Risk status table further filtered by species (this filtering WORKS)
+# Risk status table further filtered by species
 rs_sp = reactive({
   req(!is.null(input$spec_sel))
   print("resolved rs_sp reactive")
+  # Wipe any previous searches and polygons that have been mapped for either
+  # the region search or the coordinate input search.
+  region_for_leaflet(NULL)
+  buffered_click_for_leaflet(NULL)
+  dfo_data_for_region(NULL)
   rs_d() |>
     dplyr::filter(cosewic_common_name %in% input$spec_sel)
 })
