@@ -7,7 +7,7 @@ sf::write_sf(regs, "app/www/nr_regions.gpkg")
 sf::write_sf(dists, "app/www/nr_districts.gpkg")
 
 # Subwatersheds (i.e. 'Watershed Groups')
-subw = sf::read_sf("W:/CMadsen/shared_data_sets/WatershedGroups_lowres.shp") |>
+subw = sf::read_sf("//SFP.IDIR.BCGOV/S140/S40203/WFC AEB/General/2 SCIENCE - Invasives/AIS_R_Projects/CMadsen_Wdrive/shared_data_sets/WatershedGroups_lowres.shp") |>
   sf::st_transform(4326)
 sf::write_sf(subw, "app/www/watershed_groups.gpkg")
 
