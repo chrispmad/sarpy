@@ -14,6 +14,8 @@ kfo_added = reactiveVal(F)
 lat_for_search = reactiveVal("49.0538")
 lng_for_search = reactiveVal("-121.9860")
 dfo_data_for_region = reactiveVal()
+nr_added = reactiveVal(F)
+rd_added = reactiveVal(F)
 
 # Add simplified DFO polygons to map either from region select or from clicking
 # on the map.
@@ -72,19 +74,81 @@ observe({
   }
 })
 
+observe({
+
+  # adds/subtracts without redoing everything
+  l = leafletProxy('myleaf')
+
+  if(!'nr' %in% layers_to_map()){
+    l |>
+      clearGroup('nr_group')
+    nr_added(F)
+  }
+
+  req(!is.null(input$spec_sel))
+
+
+  if('nr' %in% input$dataset_sel & nr_added() == F){
+
+    l = l |>
+      addPolygons(data = nr,
+                  fillOpacity = 0.6,
+                  fillColor = 'lightblue',
+                  color = 'black',
+                  weight = 2,
+                  group = 'nr_group',
+                  label = ~paste0(REGION_NAME),
+                  options = pathOptions(pane = 'nr'))
+    nr_added(T)
+
+  }
+})
+
+
+observe({
+
+  # adds/subtracts without redoing everything
+  l = leafletProxy('myleaf')
+
+  if(!'rd' %in% layers_to_map()){
+    l |>
+      clearGroup('rd_group')
+    rd_added(F)
+  }
+
+  req(!is.null(input$spec_sel))
+
+
+  if('rd' %in% input$dataset_sel & rd_added() == F){
+
+    l = l |>
+      addPolygons(data = rd,
+                  fillOpacity = 0.6,
+                  fillColor = 'lightblue',
+                  color = 'black',
+                  weight = 2,
+                  group = 'rd_group',
+                  label = ~paste0(DISTRICT_NAME),
+                  options = pathOptions(pane = 'rd'))
+    rd_added(T)
+  }
+})
+
+
+
 output$myleaf = renderLeaflet({
   leaflet() |>
     addProviderTiles(providers$CartoDB) |>
-    addPolygons(data = bc_bound,
-                fillColor = 'transparent',
-                color = 'transparent',
-                weight = 2) |>
+    leaflet::setView(lng = -125, lat = 55, zoom = 5) |>
     addMapPane(name = 'regions', zIndex = 350) |>
     addMapPane(name = 'dfo', zIndex = 400) |>
     addMapPane(name = 'dfo_ch', zIndex = 450) |>
     addMapPane(name = 'dfo_hr', zIndex = 500) |>
     addMapPane(name = 'cdc', zIndex = 550) |>
     addMapPane(name = 'kfo', zIndex = 600) |>
+    addMapPane(name = 'nr', zIndex = 320) |>
+    addMapPane(name = 'rd', zIndex = 340) |>
+
     addLegend(
       position = 'topleft',
       title = "Legend",
@@ -127,6 +191,7 @@ observe({
         group = "regions",
         options = pathOptions(pane = "regions")
       )
+
   }
   if(!is.null(buffered_click_for_leaflet())){
     l = l |>

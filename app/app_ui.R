@@ -20,7 +20,9 @@ database_choices = c('DFO Occurrences, Simple (DFO)' = 'DFO',
                      'DFO Occurrences, High-res (DFO HR)' = "DFO HR",
                      'DFO Critical Habitat (DFO CH)' = "DFO CH",
                      'Conservation Data Centre (CDC)' = "CDC",
-                     'Known Fish Occurrences (KFO)' = "KFO")
+                     'Known Fish Occurrences (KFO)' = "KFO",
+                     "Regional Districts" = "rd",
+                     "Natural Rescource Region" = "nr")
 
 dataset_select = checkboxGroupInput("dataset_sel","Datasets to Plot",
                                     choices = database_choices,
