@@ -155,3 +155,30 @@ kfo_all_species = bcdata::bcdc_query_geodata('known-bc-fish-observations-and-bc-
 kfo_all_species_sel_cols = kfo_all_species |>
   dplyr::select(common_name = SPECIES_NAME, SPECIES_CODE, OBSERVATION_DATE)
 saveRDS(kfo_all_species_sel_cols,"app/www/kfo_all_species.rds")
+
+
+
+
+### Split DFO by natural resource regions
+regs = bcmaps::nr_regions() |> sf::st_transform(sf::st_crs(dfo))
+
+dfo_w_regs = dfo |>
+  sf::st_join(regs |> dplyr::select(REGION_NAME))
+
+for(i in 1:nrow(regs)){
+  print(i)
+  the_region_name = regs[i,]$REGION_NAME
+  dfo_for_file = dfo_w_regs[dfo_w_regs$REGION_NAME == the_region_name,]
+  # simplify the geometries!
+  bc_g_overlap = bc_g |>
+    sf::st_transform(sf::st_crs(dfo_for_file)) |>
+    sf::st_join(dfo_for_file |> dplyr::select(Common_Name_EN,Population_EN,Scientific_Name,
+                                              Taxon,Eco_Type)) |>
+    sf::st_transform(4326) |>
+    dplyr::group_by(Common_Name_EN,Population_EN,Scientific_Name,
+                    Taxon,Eco_Type) |>
+    dplyr::summarise() |>
+    dplyr::ungroup()
+  saveRDS(bc_g_overlap, file = paste0("app/www/dfo_by_region/dfo_for_",stringr::str_to_lower(the_region_name),".rds"))
+}
+

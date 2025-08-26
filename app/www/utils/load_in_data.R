@@ -8,3 +8,9 @@ kfo_all_sp = readRDS("kfo_all_species.rds")
 dfo_r_p_sp = readRDS("dfo_species_row_count.rds")
 dfo_ch = read_rds("dfo_critical_habitat.rds")
 cdc = readRDS("CDC_polygons_trimmed_by_DFO.rds")
+
+# Round two of data additions!
+nr_regs = sf::read_sf("nr_regions.gpkg")
+nr_dists = sf::read_sf("nr_districts.gpkg")
+watershed_groups = sf::read_sf("watershed_groups.gpkg")
+nlar_tbl = readr::read_csv("named_lakes_and_rivers_name_table.csv")

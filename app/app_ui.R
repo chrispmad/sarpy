@@ -38,20 +38,45 @@ population_select = pickerInput('pop_sel','Population',choices = NULL,multiple =
 polygon_icon = div(shiny::icon("draw-polygon"), id = 'poly_icon_d', class = 'menu-icon hidden')
 point_icon = div(shiny::icon("map-pin"), id = 'point_icon_d', class = 'menu-icon hidden')
 
+region_type_select = pickerInput('reg_sel',"Region/District/Other",
+                            choices = c("None","Region"))
+
+region_entity_select = uiOutput('region_entity_options_ui')
+
+region_search_button = actionButton("reg_search_button","Search!")
+
 toolbox = tagList(
   h2("Toolbox", style = 'margin-bottom:-1rem;'),
   # current_zoom,
   # dfo_data_fidelity,
   dataset_select,
-  domain_select,
-  species_select,
-  population_select,
+  bslib::accordion(
+    bslib::accordion_panel(
+      title = "Region Search",
+      region_type_select,
+      region_entity_select,
+      region_search_button
+    ),
+    bslib::accordion_panel(
+      title = "Coordinate Search",
+      textInput('lat_for_search',"Latitude",value = "49.0538"),
+      textInput('lng_for_search',"Longitude",value = "-121.9860"),
+      actionButton("coord_search_button","Search!")
+    ),
+    bslib::accordion_panel(
+      title = "Species Search",
+      domain_select,
+      species_select,
+      population_select
+    ),
+    multiple = FALSE
+  ),
   polygon_icon,
   point_icon
 )
 
 toolbox_abs_panel = absolutePanel(
-  top = '30%', left = '5%', width = '25%', height = '100%',
+  top = '15%', left = '10%', width = '25%', height = '100%',
   draggable = T,
   card(
     toolbox,
@@ -63,7 +88,7 @@ summary_panel = card(
   h3("Summaries", style = 'text-align:center;'),
   bslib::card(
     card_header(
-      "Area (km<sup>2</sup>)"
+      HTML("Area (km<sup>2</sup>)")
     ),
     textOutput('area_summary_text'),
     class = 'bg-success'

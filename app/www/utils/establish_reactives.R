@@ -3,9 +3,12 @@
 rs_d = reactive(riskstat |> dplyr::filter(domain %in% input$dom_sel))
 
 observe({
+  # Find species choices for dropdown.
   spec_choices = unique(rs_d()$cosewic_common_name)
   spec_choices = spec_choices[order(unique(spec_choices))]
 
+  # Add in little check marks and x marks telling us whether or not there
+  # is DFO data, DFO CH data, CDC data, or KFO data for each species.
   dfo_data_availability = data.frame(common_name = spec_choices) |>
     dplyr::left_join(dfo_r_p_sp) |>
     dplyr::group_by(common_name) |>
@@ -66,10 +69,15 @@ observe({
   updatePickerInput('pop_sel',choices = NULL, session=session)
   print("updated spec_sel input")
 })
-# Risk status table further filtered by species (this filtering WORKS)
+# Risk status table further filtered by species
 rs_sp = reactive({
   req(!is.null(input$spec_sel))
   print("resolved rs_sp reactive")
+  # Wipe any previous searches and polygons that have been mapped for either
+  # the region search or the coordinate input search.
+  region_for_leaflet(NULL)
+  buffered_click_for_leaflet(NULL)
+  dfo_data_for_region(NULL)
   rs_d() |>
     dplyr::filter(cosewic_common_name %in% input$spec_sel)
 })
@@ -84,6 +92,11 @@ observe({
   this_sp_pops_cdc = cdc[cdc$ENG_NAME %in% input$spec_sel,]$population
   # Combine.
   this_sp_pops = c(this_sp_pops_dfo,this_sp_pops_cdc)
+  # Replace any populations that have no label (i.e., are NA), with 'Unspecified'.
+  this_sp_pops = this_sp_pops |>
+    lapply(\(x) tidyr::replace_na(x, "Unspecified")) |>
+    unlist()
+  this_sp_pops = unique(this_sp_pops)
   updatePickerInput('pop_sel',
                     choices = unique(this_sp_pops)[order(this_sp_pops)],
                     selected = unique(this_sp_pops)[1],
@@ -105,3 +118,17 @@ observe({
 #   }
 #   output
 # })
+
+layers_to_map = reactive({
+  input$dataset_sel
+})
+
+spec_sel_r = reactive({
+  input$spec_sel
+})
+
+pop_sel_r = reactive({
+  input$pop_sel |>
+    lapply(\(x) ifelse(x == 'Unspecified',NA,x)) |>
+    unlist()
+})
