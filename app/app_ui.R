@@ -41,17 +41,26 @@ polygon_icon = div(shiny::icon("draw-polygon"), id = 'poly_icon_d', class = 'men
 point_icon = div(shiny::icon("map-pin"), id = 'point_icon_d', class = 'menu-icon hidden')
 
 region_type_select = pickerInput('reg_sel',"Region/District/Other",
-                            choices = c("None","Region"))
+                                 choices = c("None","Region"))
 
 region_entity_select = uiOutput('region_entity_options_ui')
 
 region_search_button = actionButton("reg_search_button","Search!")
 
-toolbox = tagList(
+toolbox_species = tagList(
   h2("Toolbox", style = 'margin-bottom:-1rem;'),
   # current_zoom,
   # dfo_data_fidelity,
   dataset_select,
+  domain_select,
+  species_select,
+  population_select,
+  polygon_icon,
+  point_icon
+)
+
+toolbox_location = tagList(
+  h2("Toolbox", style = 'margin-bottom:-1rem;'),
   bslib::accordion(
     bslib::accordion_panel(
       title = "Region Search",
@@ -65,23 +74,24 @@ toolbox = tagList(
       textInput('lng_for_search',"Longitude",value = "-121.9860"),
       actionButton("coord_search_button","Search!")
     ),
-    bslib::accordion_panel(
-      title = "Species Search",
-      domain_select,
-      species_select,
-      population_select
-    ),
     multiple = FALSE
-  ),
-  polygon_icon,
-  point_icon
+  )
 )
 
-toolbox_abs_panel = absolutePanel(
+toolbox_location_abs_panel = absolutePanel(
   top = '15%', left = '10%', width = '25%', height = '100%',
   draggable = T,
   card(
-    toolbox,
+    toolbox_location,
+    class = 'floating-toolbox'
+  )
+)
+
+toolbox_species_abs_panel = absolutePanel(
+  top = '15%', left = '10%', width = '25%', height = '100%',
+  draggable = T,
+  card(
+    toolbox_species,
     class = 'floating-toolbox'
   )
 )
@@ -112,13 +122,24 @@ summary_panel = card(
   class = 'summary-panel'
 )
 
-ui <- page_fluid(
+ui <- page_navbar(
   shiny::includeCSS("www/my_styles.css"),
   shiny::includeScript("www/my_JS.js"),
-  card(
-    leafletOutput('myleaf', height = '100%'),
-    class = 'leaf-card'
+  nav_panel(
+    title = "Location Search",
+    card(
+      leafletOutput('location_search_leaf', height = '100%'),
+      class = 'leaf-card'
+    ),
+    toolbox_location_abs_panel
   ),
-  toolbox_abs_panel,
+  nav_panel(
+    title = "Species Search",
+    card(
+      leafletOutput('species_search_leaf', height = '100%'),
+      class = 'leaf-card'
+    ),
+    toolbox_species_abs_panel
+  ),
   summary_panel
 )

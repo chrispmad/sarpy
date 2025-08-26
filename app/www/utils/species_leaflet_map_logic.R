@@ -4,11 +4,16 @@
 # region or overlapping with the buffered click point. We initialize these
 # reactiveVals as either NULL (i.e. empty) or as FALSE, although the
 # lat and lng for search has Cultus Lake as its default location.
+region_for_leaflet = reactiveVal()
+buffered_click_for_leaflet = reactiveVal()
 dfo_added = reactiveVal(F)
 dfo_hr_added = reactiveVal(F)
 dfo_ch_added = reactiveVal(F)
 cdc_added = reactiveVal(F)
 kfo_added = reactiveVal(F)
+lat_for_search = reactiveVal("49.0538")
+lng_for_search = reactiveVal("-121.9860")
+dfo_data_for_region = reactiveVal()
 nr_added = reactiveVal(F)
 rd_added = reactiveVal(F)
 
@@ -18,7 +23,7 @@ observe({
   if(!is.null(dfo_data_for_region()) | !is.null(buffered_click_for_leaflet())){
 
     # there is 0 or more rows in this reactive Val.
-    l = leafletProxy('species_search_leaf') |>
+    l = leafletProxy('myleaf') |>
       clearGroup("dfo_for_region") |>
       clearGroup("dfo") |>
       clearGroup("dfo_ch") |>
